@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neural Blueprints — Agentic AI System Design</title>
+  <meta name="description" content="Deep technical essays on Agentic AI systems — real-world use cases, production architecture, and engineering tradeoffs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       SHARED DESIGN TOKENS
+       ============================================ */
+    :root {
+      /* Backgrounds */
+      --bg-body:        #F7F6F3;
+      --bg-sidebar:     #1A1D23;
+      --bg-card:        #FFFFFF;
+      --bg-callout:     #EEF2FF;
+
+      /* Text */
+      --text-primary:   #0F1117;
+      --text-secondary: #4A5568;
+      --text-sidebar:   #E2E8F0;
+      --text-sidebar-muted: #718096;
+      --text-sidebar-active: #FFFFFF;
+
+      /* Accent */
+      --accent:         #5B63FE;
+      --accent-hover:   #4348D4;
+      --accent-subtle:  #EEF2FF;
+
+      /* Layer palette (SVG + tag pills) */
+      --layer-user:     #60A5FA;
+      --layer-orch:     #A78BFA;
+      --layer-agent:    #34D399;
+      --layer-memory:   #FBBF24;
+      --layer-tool:     #F87171;
+      --layer-infra:    #94A3B8;
+
+      /* Borders */
+      --border:         #E2E8F0;
+      --border-strong:  #CBD5E1;
+
+      /* Typography scale */
+      --text-xs:    0.75rem;
+      --text-sm:    0.875rem;
+      --text-base:  1rem;
+      --text-lg:    1.125rem;
+      --text-xl:    1.25rem;
+      --text-2xl:   1.5rem;
+      --text-3xl:   1.875rem;
+      --text-4xl:   2.25rem;
+      --text-5xl:   3rem;
+
+      /* Sidebar */
+      --sidebar-width: 280px;
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-body);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); }
+
+    /* ============================================
+       LAYOUT
+       ============================================ */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      min-height: 100vh;
+    }
+
+    /* ============================================
+       SIDEBAR
+       ============================================ */
+    .sidebar {
+      background: var(--bg-sidebar);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      scrollbar-width: thin;
+      scrollbar-color: #2D3748 transparent;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 2px; }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 28px 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg { width: 20px; height: 20px; fill: white; }
+
+    .brand-name {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--text-sidebar);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-tagline {
+      font-size: var(--text-xs);
+      color: var(--text-sidebar-muted);
+      margin-top: 2px;
+    }
+
+    .nav-section {
+      padding: 20px 12px 8px;
+      flex: 1;
+    }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-sidebar-muted);
+      padding: 0 8px;
+      margin-bottom: 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-bottom: 2px;
+      transition: background 0.15s, color 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.06);
+      color: var(--text-sidebar);
+    }
+
+    .nav-item.active {
+      border-left-color: var(--accent);
+      background: rgba(91,99,254,0.12);
+    }
+
+    .nav-item.active .nav-item-number,
+    .nav-item.active .nav-item-title {
+      color: var(--text-sidebar-active);
+    }
+
+    .nav-item-number {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      color: var(--text-sidebar-muted);
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    .nav-item-title {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-sidebar-muted);
+      line-height: 1.4;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      gap: 16px;
+    }
+
+    .sidebar-footer a {
+      font-size: var(--text-xs);
+      color: var(--text-sidebar-muted);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .sidebar-footer a:hover { color: var(--text-sidebar); }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main-content {
+      padding: 64px 72px;
+      max-width: 960px;
+    }
+
+    /* ============================================
+       HERO
+       ============================================ */
+    .hero {
+      margin-bottom: 64px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    .hero-title {
+      font-size: var(--text-5xl);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      max-width: 640px;
+    }
+
+    .hero-subtitle {
+      font-size: var(--text-lg);
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 560px;
+    }
+
+    /* ============================================
+       FEATURED POST CARD
+       ============================================ */
+    .section-label {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .featured-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px 40px;
+      margin-bottom: 48px;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .featured-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), #A78BFA);
+    }
+
+    .featured-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+      border-color: var(--border-strong);
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .post-number {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-secondary);
+      background: #F1F5F9;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    .tag-agent   { background: rgba(52,211,153,0.12); color: #059669; }
+    .tag-memory  { background: rgba(251,191,36,0.12);  color: #D97706; }
+    .tag-orch    { background: rgba(167,139,250,0.12); color: #7C3AED; }
+
+    .card-title {
+      font-size: var(--text-3xl);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-bottom: 14px;
+    }
+
+    .card-title a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+
+    .card-title a:hover { color: var(--accent); }
+
+    .card-description {
+      font-size: var(--text-base);
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 24px;
+      max-width: 600px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-date-time {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+    }
+
+    .card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      transition: gap 0.15s;
+    }
+
+    .card-cta:hover { gap: 10px; color: var(--accent-hover); }
+
+    /* ============================================
+       COMING SOON
+       ============================================ */
+    .coming-soon-section { margin-top: 16px; }
+
+    .coming-soon-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .placeholder-card {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-strong);
+      border-radius: 10px;
+      padding: 24px 28px;
+      opacity: 0.6;
+    }
+
+    .placeholder-label {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .placeholder-title {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+    }
+
+    .placeholder-soon {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: #F1F5F9;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ============================================
+       MOBILE
+       ============================================ */
+    .mobile-header {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--bg-sidebar);
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .mobile-brand {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--text-sidebar);
+    }
+
+    .hamburger {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text-sidebar);
+      border-radius: 1px;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+
+    @media (max-width: 767px) {
+      .mobile-header { display: flex; }
+
+      .layout {
+        grid-template-columns: 1fr;
+        padding-top: 56px;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 56px;
+        left: 0;
+        height: calc(100vh - 56px);
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        width: var(--sidebar-width);
+      }
+
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.visible { display: block; }
+
+      .main-content { padding: 32px 20px; }
+
+      .hero-title { font-size: var(--text-4xl); }
+
+      .featured-card { padding: 24px 20px; }
+
+      .coming-soon-grid { grid-template-columns: 1fr; }
+
+      .card-footer { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+
+    @media (min-width: 768px) and (max-width: 1024px) {
+      :root { --sidebar-width: 240px; }
+      .main-content { padding: 48px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Mobile Header -->
+  <header class="mobile-header">
+    <span class="mobile-brand">Neural Blueprints</span>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="overlay"></div>
+
+  <div class="layout">
+
+    <!-- ============ SIDEBAR ============ -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">Neural Blueprints</div>
+          <div class="brand-tagline">Sushant Joshi · AI Systems</div>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-label">Agentic AI</div>
+        <a class="nav-item active" href="./blog-01/">
+          <span class="nav-item-number">01</span>
+          <span class="nav-item-title">Autonomous Software Engineering</span>
+        </a>
+      </div>
+
+      <div class="sidebar-footer">
+        <a href="https://github.com/sushant-joshi" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/sushant-joshi" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </nav>
+
+    <!-- ============ MAIN ============ -->
+    <main class="main-content">
+
+      <!-- Hero -->
+      <section class="hero">
+        <div class="hero-eyebrow">Neural Blueprints</div>
+        <h1 class="hero-title">Engineering at the Edge of Intelligence</h1>
+        <p class="hero-subtitle">
+          Deeply researched system design essays on Agentic AI — one compelling real-world use case, one production-grade architecture, one new essay per day.
+        </p>
+      </section>
+
+      <!-- Featured Post -->
+      <div class="section-label">Latest Essay</div>
+      <article class="featured-card">
+        <div class="card-meta-row">
+          <span class="post-number">Essay 01</span>
+          <span class="tag tag-agent">Multi-Agent</span>
+          <span class="tag tag-memory">Agentic Memory</span>
+          <span class="tag tag-orch">Orchestration</span>
+        </div>
+        <h2 class="card-title">
+          <a href="./blog-01/">Autonomous Software Engineering: Designing a Production-Scale Agentic System</a>
+        </h2>
+        <p class="card-description">
+          Software development is still largely a manual, sequential process — but not for much longer. This essay designs a full agentic SDLC platform: six specialized agents, a four-tier memory architecture, and the orchestration patterns that hold it together at scale.
+        </p>
+        <div class="card-footer">
+          <span class="card-date-time">April 3, 2026 &nbsp;·&nbsp; 28 min read</span>
+          <a class="card-cta" href="./blog-01/">
+            Read Essay
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </article>
+
+      <!-- Coming Soon -->
+      <div class="section-label coming-soon-section">Coming Next</div>
+      <div class="coming-soon-grid">
+        <div class="placeholder-card">
+          <div class="placeholder-label">Essay 02 · Agentic AI</div>
+          <div class="placeholder-title">AI-Powered Security Operations: Designing an Autonomous SOC</div>
+          <span class="placeholder-soon">Coming soon</span>
+        </div>
+        <div class="placeholder-card">
+          <div class="placeholder-label">Essay 03 · Agentic AI</div>
+          <div class="placeholder-title">Drug Discovery at Machine Speed: Multi-Agent Scientific Reasoning</div>
+          <span class="placeholder-soon">Coming soon</span>
+        </div>
+        <div class="placeholder-card">
+          <div class="placeholder-label">Essay 04 · Agentic AI</div>
+          <div class="placeholder-title">Autonomous Supply Chain: Real-Time Decision Agents at Scale</div>
+          <span class="placeholder-soon">Coming soon</span>
+        </div>
+        <div class="placeholder-card">
+          <div class="placeholder-label">Essay 05 · Agentic AI</div>
+          <div class="placeholder-title">Evaluating Agentic AI: Benchmarks, Failure Modes, and Trust</div>
+          <span class="placeholder-soon">Coming soon</span>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const sidebar   = document.getElementById('sidebar');
+    const overlay   = document.getElementById('overlay');
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('visible');
+    }
+
+    hamburger.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+  </script>
+</body>
+</html>
