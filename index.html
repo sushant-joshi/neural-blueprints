@@ -332,9 +332,11 @@
       border-radius: 20px;
     }
 
-    .tag-agent   { background: rgba(52,211,153,0.12); color: #059669; }
-    .tag-memory  { background: rgba(251,191,36,0.12);  color: #D97706; }
-    .tag-orch    { background: rgba(167,139,250,0.12); color: #7C3AED; }
+    .tag-agent    { background: rgba(52,211,153,0.12);  color: #059669; }
+    .tag-memory   { background: rgba(251,191,36,0.12);  color: #D97706; }
+    .tag-orch     { background: rgba(167,139,250,0.12); color: #7C3AED; }
+    .tag-security { background: rgba(248,113,113,0.12); color: #DC2626; }
+    .tag-threat   { background: rgba(251,146,60,0.12);  color: #EA580C; }
 
     .card-title {
       font-size: var(--text-3xl);
@@ -384,6 +386,53 @@
     }
 
     .card-cta:hover { gap: 10px; color: var(--accent-hover); }
+
+    /* ============================================
+       PREVIOUS ESSAYS GRID
+       ============================================ */
+    .prev-essays-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .prev-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px 28px;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      text-decoration: none;
+      display: block;
+    }
+
+    .prev-card:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      border-color: var(--border-strong);
+      text-decoration: none;
+    }
+
+    .prev-card-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .prev-card-title {
+      font-size: var(--text-base);
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .prev-card-date {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+    }
 
     /* ============================================
        COMING SOON
@@ -552,7 +601,11 @@
 
       <div class="nav-section">
         <div class="nav-section-label">Agentic AI</div>
-        <a class="nav-item active" href="./blog-01/">
+        <a class="nav-item" href="./blog-02/">
+          <span class="nav-item-number">02</span>
+          <span class="nav-item-title">Autonomous Security Operations</span>
+        </a>
+        <a class="nav-item" href="./blog-01/">
           <span class="nav-item-number">01</span>
           <span class="nav-item-title">Autonomous Software Engineering</span>
         </a>
@@ -580,34 +633,43 @@
       <div class="section-label">Latest Essay</div>
       <article class="featured-card">
         <div class="card-meta-row">
-          <span class="post-number">Essay 01</span>
-          <span class="tag tag-agent">Multi-Agent</span>
-          <span class="tag tag-memory">Agentic Memory</span>
-          <span class="tag tag-orch">Orchestration</span>
+          <span class="post-number">Essay 02</span>
+          <span class="tag tag-security">Multi-Agent</span>
+          <span class="tag tag-threat">Threat Reasoning</span>
+          <span class="tag tag-orch">Safe Tool Use</span>
         </div>
         <h2 class="card-title">
-          <a href="./blog-01/">Autonomous Software Engineering: Designing a Production-Scale Agentic System</a>
+          <a href="./blog-02/">Never Sleep, Never Flinch: Designing an Autonomous Security Operations Center</a>
         </h2>
         <p class="card-description">
-          Software development is still largely a manual, sequential process — but not for much longer. This essay designs a full agentic SDLC platform: six specialized agents, a four-tier memory architecture, and the orchestration patterns that hold it together at scale.
+          SOC analysts face an impossible equation: millions of alerts per day, seconds to respond, and careers spent in chronic alert fatigue. This essay designs an agentic SOC platform that reasons over event graphs, reconstructs kill chains autonomously, and acts — safely — at machine speed.
         </p>
         <div class="card-footer">
-          <span class="card-date-time">April 3, 2026 &nbsp;·&nbsp; 28 min read</span>
-          <a class="card-cta" href="./blog-01/">
+          <span class="card-date-time">April 10, 2026 &nbsp;·&nbsp; 30 min read</span>
+          <a class="card-cta" href="./blog-02/">
             Read Essay
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </a>
         </div>
       </article>
 
+      <!-- Previous Essays -->
+      <div class="section-label">Previous Essays</div>
+      <div class="prev-essays-grid" style="margin-bottom: 48px;">
+        <a class="prev-card" href="./blog-01/">
+          <div class="prev-card-meta">
+            <span class="post-number">Essay 01</span>
+            <span class="tag tag-agent">Multi-Agent</span>
+            <span class="tag tag-memory">Memory</span>
+          </div>
+          <div class="prev-card-title">Autonomous Software Engineering: Designing a Production-Scale Agentic System</div>
+          <div class="prev-card-date">April 3, 2026 · 28 min read</div>
+        </a>
+      </div>
+
       <!-- Coming Soon -->
       <div class="section-label coming-soon-section">Coming Next</div>
       <div class="coming-soon-grid">
-        <div class="placeholder-card">
-          <div class="placeholder-label">Essay 02 · Agentic AI</div>
-          <div class="placeholder-title">AI-Powered Security Operations: Designing an Autonomous SOC</div>
-          <span class="placeholder-soon">Coming soon</span>
-        </div>
         <div class="placeholder-card">
           <div class="placeholder-label">Essay 03 · Agentic AI</div>
           <div class="placeholder-title">Drug Discovery at Machine Speed: Multi-Agent Scientific Reasoning</div>
