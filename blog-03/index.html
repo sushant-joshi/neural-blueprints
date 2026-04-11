@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Molecule by Molecule: Designing a Multi-Agent Drug Discovery Platform — Neural Blueprints</title>
+  <meta name="description" content="Designing a multi-agent drug discovery platform: long-horizon hypothesis trees, tool-augmented molecular reasoning, and how agentic AI is compressing the pre-clinical timeline from years to weeks.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+    :root {
+      --bg-body:        #F7F6F3;
+      --bg-sidebar:     #1A1D23;
+      --bg-card:        #FFFFFF;
+      --bg-callout-insight: #EEF2FF;
+      --bg-callout-warn:    #FFFBEB;
+      --bg-callout-code:    #ECFDF5;
+      --bg-callout-data:    #EFF6FF;
+      --bg-callout-science: #F0FDFA;
+
+      --text-primary:   #0F1117;
+      --text-secondary: #4A5568;
+      --text-sidebar:   #E2E8F0;
+      --text-sidebar-muted: #718096;
+      --text-sidebar-active: #FFFFFF;
+
+      --accent:         #5B63FE;
+      --accent-hover:   #4348D4;
+      --accent-subtle:  #EEF2FF;
+
+      --border:         #E2E8F0;
+      --border-strong:  #CBD5E1;
+
+      --text-xs:    0.75rem;
+      --text-sm:    0.875rem;
+      --text-base:  1rem;
+      --text-lg:    1.125rem;
+      --text-xl:    1.25rem;
+      --text-2xl:   1.5rem;
+      --text-3xl:   1.875rem;
+      --text-4xl:   2.25rem;
+
+      --sidebar-width: 280px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-body); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+    .layout { display: grid; grid-template-columns: var(--sidebar-width) 1fr; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { background: var(--bg-sidebar); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; scrollbar-width: thin; scrollbar-color: #2D3748 transparent; }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 2px; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 28px 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .brand-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .brand-icon svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; }
+    .brand-name { font-size: var(--text-sm); font-weight: 700; color: var(--text-sidebar); letter-spacing: -0.01em; }
+    .brand-tagline { font-size: var(--text-xs); color: var(--text-sidebar-muted); margin-top: 2px; }
+    .nav-section { padding: 20px 12px 8px; flex: 1; }
+    .nav-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-sidebar-muted); padding: 0 8px; margin-bottom: 6px; }
+    .nav-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; border-radius: 6px; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; border-left: 3px solid transparent; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); text-decoration: none; }
+    .nav-item.active { border-left-color: var(--accent); background: rgba(91,99,254,0.12); }
+    .nav-item.active .nav-item-number, .nav-item.active .nav-item-title { color: var(--text-sidebar-active); }
+    .nav-item-number { font-size: var(--text-xs); font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-sidebar-muted); flex-shrink: 0; padding-top: 1px; }
+    .nav-item-title { font-size: var(--text-sm); font-weight: 500; color: var(--text-sidebar-muted); line-height: 1.4; }
+    .sidebar-footer { padding: 16px 20px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 16px; }
+    .sidebar-footer a { font-size: var(--text-xs); color: var(--text-sidebar-muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+    .sidebar-footer a:hover { color: var(--text-sidebar); }
+
+    /* ARTICLE */
+    .article-wrapper { padding: 56px 72px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 500; color: var(--text-secondary); text-decoration: none; margin-bottom: 40px; transition: color 0.15s; }
+    .back-link:hover { color: var(--accent); text-decoration: none; }
+    .article-header { max-width: 720px; margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+    .article-meta-top { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .post-number-badge { font-size: var(--text-xs); font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); background: #F1F5F9; padding: 3px 8px; border-radius: 4px; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .tag-agent    { background: rgba(52,211,153,0.12);  color: #059669; }
+    .tag-memory   { background: rgba(251,191,36,0.12);  color: #D97706; }
+    .tag-orch     { background: rgba(167,139,250,0.12); color: #7C3AED; }
+    .tag-science  { background: rgba(34,211,238,0.12);  color: #0891B2; }
+    .tag-tools    { background: rgba(96,165,250,0.12);  color: #2563EB; }
+    .tag-planning { background: rgba(251,191,36,0.12);  color: #D97706; }
+    .article-title { font-size: var(--text-4xl); font-weight: 900; line-height: 1.15; letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 20px; }
+    .article-subtitle { font-size: var(--text-lg); color: var(--text-secondary); line-height: 1.75; margin-bottom: 28px; }
+    .article-meta-bottom { display: flex; align-items: center; gap: 20px; }
+    .author-info { display: flex; align-items: center; gap: 10px; }
+    .author-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #A78BFA); display: flex; align-items: center; justify-content: center; font-size: var(--text-sm); font-weight: 700; color: white; flex-shrink: 0; }
+    .author-name { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+    .author-role { font-size: var(--text-xs); color: var(--text-secondary); }
+    .meta-divider { color: var(--border-strong); }
+    .article-date-time { font-size: var(--text-sm); color: var(--text-secondary); }
+
+    /* BODY */
+    .article-body { max-width: 720px; font-size: var(--text-base); line-height: 1.8; color: var(--text-primary); }
+    .article-body p { margin-bottom: 1.4em; }
+    .article-body p.lead { font-size: var(--text-lg); line-height: 1.9; color: var(--text-secondary); margin-bottom: 1.6em; }
+    .article-body h2 { font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); margin-top: 3.5rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .article-body h3 { font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); margin-top: 2.2rem; margin-bottom: 0.7rem; }
+    .article-body ul, .article-body ol { margin-left: 1.5em; margin-bottom: 1.4em; }
+    .article-body li { margin-bottom: 0.4em; }
+    .article-body strong { font-weight: 600; }
+    .article-body code { font-family: 'JetBrains Mono', monospace; font-size: 0.875em; background: #F1F5F9; padding: 2px 6px; border-radius: 4px; color: #0891B2; }
+
+    .pull-quote { border-left: 4px solid var(--accent); padding: 20px 28px; margin: 2rem 0; background: var(--accent-subtle); border-radius: 0 8px 8px 0; }
+    .pull-quote p { font-size: var(--text-xl); font-weight: 500; font-style: italic; line-height: 1.5; color: var(--text-primary); margin: 0; }
+
+    .callout { border-radius: 0 8px 8px 0; padding: 16px 20px; margin: 1.6rem 0; }
+    .callout-label { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+    .callout p { margin-bottom: 0; font-size: var(--text-sm); line-height: 1.65; }
+    .callout ul { margin-bottom: 0; font-size: var(--text-sm); line-height: 1.65; }
+    .callout-insight { border-left: 4px solid var(--accent); background: var(--bg-callout-insight); }
+    .callout-insight .callout-label { color: var(--accent); }
+    .callout-warning { border-left: 4px solid #F59E0B; background: var(--bg-callout-warn); }
+    .callout-warning .callout-label { color: #D97706; }
+    .callout-code { border-left: 4px solid #34D399; background: var(--bg-callout-code); }
+    .callout-code .callout-label { color: #059669; }
+    .callout-science { border-left: 4px solid #22D3EE; background: var(--bg-callout-science); }
+    .callout-science .callout-label { color: #0891B2; }
+
+    .scenario-box { background: var(--bg-sidebar); color: var(--text-sidebar); border-radius: 10px; padding: 28px 32px; margin: 2rem 0; }
+    .scenario-box .scenario-label { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #22D3EE; margin-bottom: 12px; }
+    .scenario-box p { font-size: var(--text-sm); line-height: 1.75; color: #CBD5E1; margin-bottom: 0.8em; }
+    .scenario-box p:last-child { margin-bottom: 0; }
+    .scenario-box .mono { font-family: 'JetBrains Mono', monospace; color: #34D399; font-size: 12px; }
+
+    .data-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 2rem 0; }
+    .data-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+    .data-card .data-number { font-size: var(--text-3xl); font-weight: 900; letter-spacing: -0.03em; color: #0891B2; line-height: 1; margin-bottom: 6px; }
+    .data-card .data-label { font-size: var(--text-xs); color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
+
+    .property-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 2rem 0; }
+    .property-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .property-card .prop-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 18px; }
+    .property-card .prop-title { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .property-card .prop-desc { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.6; }
+
+    .table-wrapper { overflow-x: auto; margin: 1.8rem 0; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    thead tr { background: var(--bg-sidebar); color: var(--text-sidebar); }
+    thead th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: var(--text-xs); letter-spacing: 0.05em; text-transform: uppercase; }
+    tbody tr:nth-child(even) { background: #F8FAFC; }
+    tbody tr:nth-child(odd) { background: var(--bg-card); }
+    tbody td { padding: 12px 16px; color: var(--text-primary); line-height: 1.5; border-top: 1px solid var(--border); vertical-align: top; }
+
+    .code-block { margin: 1.6rem 0; border-radius: 10px; overflow: hidden; border: 1px solid #21262D; }
+    .code-header { background: #161B22; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .code-lang { font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: #8B949E; text-transform: uppercase; letter-spacing: 0.05em; }
+    .code-copy { background: none; border: 1px solid #30363D; border-radius: 4px; color: #8B949E; font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 3px 10px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .code-copy:hover { background: #21262D; color: #E2E8F0; }
+    .code-block pre { margin: 0; padding: 0; border-radius: 0; }
+    .code-block pre code { padding: 20px !important; font-size: 13.5px !important; line-height: 1.65 !important; font-family: 'JetBrains Mono', 'Fira Code', monospace !important; }
+
+    .diagram-section { margin: 2.5rem 0; }
+    .diagram-title { font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); text-align: center; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .diagram-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; overflow-x: auto; }
+    .diagram-container svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+    .diagram-caption { font-size: var(--text-xs); color: var(--text-secondary); text-align: center; margin-top: 12px; font-style: italic; }
+
+    .article-footer { max-width: 720px; margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--border); }
+    .author-bio-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px 28px; display: flex; gap: 20px; align-items: flex-start; }
+    .bio-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #A78BFA); display: flex; align-items: center; justify-content: center; font-size: var(--text-lg); font-weight: 700; color: white; flex-shrink: 0; }
+    .bio-name { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .bio-desc { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; }
+
+    /* Mobile */
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--bg-sidebar); align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .mobile-brand { font-size: var(--text-sm); font-weight: 700; color: var(--text-sidebar); }
+    .hamburger { background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-direction: column; gap: 5px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--text-sidebar); border-radius: 1px; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
+    @media (max-width: 767px) {
+      .mobile-header { display: flex; }
+      .layout { grid-template-columns: 1fr; padding-top: 56px; }
+      .sidebar { position: fixed; top: 56px; left: 0; height: calc(100vh - 56px); z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; width: var(--sidebar-width); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.visible { display: block; }
+      .article-wrapper { padding: 28px 20px 60px; }
+      .article-title { font-size: var(--text-3xl); }
+      .data-cards { grid-template-columns: 1fr; }
+      .property-grid { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 768px) and (max-width: 1024px) {
+      :root { --sidebar-width: 240px; }
+      .article-wrapper { padding: 48px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="mobile-header">
+    <span class="mobile-brand">Neural Blueprints</span>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+  <div class="sidebar-overlay" id="overlay"></div>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="12 2 2 7 12 12 22 7 12 2"></polyline>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">Neural Blueprints</div>
+          <div class="brand-tagline">Sushant Joshi · AI Systems</div>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Agentic AI</div>
+        <a class="nav-item active" href="../blog-03/">
+          <span class="nav-item-number">03</span>
+          <span class="nav-item-title">Drug Discovery at Machine Speed</span>
+        </a>
+        <a class="nav-item" href="../blog-02/">
+          <span class="nav-item-number">02</span>
+          <span class="nav-item-title">Autonomous Security Operations</span>
+        </a>
+        <a class="nav-item" href="../blog-01/">
+          <span class="nav-item-number">01</span>
+          <span class="nav-item-title">Autonomous Software Engineering</span>
+        </a>
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://github.com/sushant-joshi" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/sushant-joshi" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </nav>
+
+    <!-- ARTICLE -->
+    <div class="article-wrapper">
+
+      <a class="back-link" href="../">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        All Essays
+      </a>
+
+      <header class="article-header">
+        <div class="article-meta-top">
+          <span class="post-number-badge">Essay 03</span>
+          <span class="tag tag-science">Multi-Agent</span>
+          <span class="tag tag-tools">Scientific Tooling</span>
+          <span class="tag tag-planning">Long-Horizon Planning</span>
+        </div>
+        <h1 class="article-title">Molecule by Molecule: Designing a Multi-Agent Drug Discovery Platform</h1>
+        <p class="article-subtitle">
+          Drug discovery takes 12 years and $2.6 billion on average — most of it lost to a search space of 10<sup>60</sup> possible molecules. This essay designs a multi-agent platform that runs parallel hypothesis trees, reasons over molecular structure with domain-specific scientific tools, and compresses the pre-clinical timeline from years to weeks.
+        </p>
+        <div class="article-meta-bottom">
+          <div class="author-info">
+            <div class="author-avatar">SJ</div>
+            <div>
+              <div class="author-name">Sushant Joshi</div>
+              <div class="author-role">Principal Engineer · AI Systems</div>
+            </div>
+          </div>
+          <span class="meta-divider">·</span>
+          <span class="article-date-time">April 11, 2026 &nbsp;·&nbsp; 31 min read</span>
+        </div>
+      </header>
+
+      <div class="article-body">
+
+        <!-- S1: THE PROBLEM -->
+        <h2>The Most Expensive Search Problem in the World</h2>
+
+        <p class="lead">
+          There are an estimated 10<sup>60</sup> drug-like molecules in chemical space. All of human history has synthesized and tested roughly 10<sup>8</sup> of them. The gap between what we have explored and what exists is so large that it beggars description — it is the difference between a single grain of sand and every beach on Earth, a thousand times over. And yet, despite this incomprehensible unexplored territory, the pharmaceutical industry's primary strategy for finding new drugs has historically been to search near what it already knows.
+        </p>
+
+        <p>
+          The consequences are visible in the industry's economics. The average cost to bring a new drug from discovery to approval has grown to $2.6 billion, taking 12–15 years from first synthesis to patient. Approximately 90% of drug candidates that enter clinical trials fail — most of them due to problems (toxicity, insufficient efficacy, poor pharmacokinetics) that were already present in the molecule at the pre-clinical stage, but that current screening methods are too slow and too expensive to catch early. The system is not just slow. It is systematically wasting resources on candidates that were never going to work.
+        </p>
+
+        <div class="data-cards">
+          <div class="data-card">
+            <div class="data-number">10<sup style="font-size:1.2rem">60</sup></div>
+            <div class="data-label">Estimated drug-like molecules in chemical space — fewer than 10<sup>8</sup> ever tested</div>
+          </div>
+          <div class="data-card">
+            <div class="data-number">$2.6B</div>
+            <div class="data-label">Average cost to bring a drug from discovery to approval (Deloitte, 2025)</div>
+          </div>
+          <div class="data-card">
+            <div class="data-number">90%</div>
+            <div class="data-label">Clinical trial failure rate — most failures trace to pre-clinical problems missed early</div>
+          </div>
+        </div>
+
+        <p>
+          The case for agentic AI in drug discovery is not that AI will replace chemists and biologists. It is that the pre-clinical phase of drug discovery — target identification, hit finding, lead optimization, ADMET profiling — is fundamentally a <em>search problem over a structured space</em>, and agentic AI can search that space orders of magnitude faster than human-driven processes, using computational experiments to filter the candidate pool before a single molecule is synthesized in a lab.
+        </p>
+
+        <p>
+          In June 2025, a drug designed entirely computationally using agentic AI methods completed Phase IIa clinical trials — the first such milestone in history. The preclinical pipeline that would have taken 4–5 years under conventional methods was compressed to 18 months. This essay designs the system architecture behind that kind of acceleration.
+        </p>
+
+        <div class="pull-quote">
+          <p>"The bottleneck in drug discovery is not biology. It is the rate at which we can form, test, and prune hypotheses about molecular structure and biological function. Agentic AI attacks that bottleneck directly."</p>
+        </div>
+
+        <!-- S2: USE CASE -->
+        <h2>The Use Case: Pre-Clinical Pipeline Automation</h2>
+
+        <p>
+          The scope of this design is the pre-clinical phase of drug discovery: from a validated disease target through to a clinical candidate compound ready for IND (Investigational New Drug) filing. This phase encompasses target characterization, virtual screening, hit identification, lead optimization, and ADMET (Absorption, Distribution, Metabolism, Excretion, Toxicity) profiling. It is the phase that historically takes the longest and produces the most avoidable failures.
+        </p>
+
+        <div class="scenario-box">
+          <div class="scenario-label">Platform in Motion — A Drug Discovery Sprint</div>
+          <p>
+            The input: a validated protein target — KRAS G12C, a long-"undruggable" oncology target that became tractable after the discovery of an allosteric binding site. The mission: find candidate molecules that bind the allosteric site with high affinity, selectivity against wild-type KRAS, and acceptable ADMET properties.
+          </p>
+          <p>
+            The Target Agent retrieves the crystal structure of KRAS G12C from the PDB, identifies the allosteric pocket geometry, and queries literature for known binders and their SAR profiles. It hands a structured target brief to the Hit Finding Agent, which runs a virtual screen of 2.3 million compounds from the Enamine REAL library using molecular docking simulation — parallelized across 512 GPU cores, completing in 6 hours.
+          </p>
+          <p>
+            The top 847 hits are ranked by docking score and passed to the Lead Optimization Agent. It queries the ADMET prediction model for each: <span class="mono">predicted_solubility: 0.4 mg/mL [FAIL]</span> for 612 compounds. The remaining 235 are entered into a generative optimization loop: the molecular design model proposes structural modifications to improve solubility while preserving binding geometry. Each proposed modification is immediately scored computationally.
+          </p>
+          <p>
+            After 72 hours of autonomous iteration, 14 compounds have passed all computational filters. The Experimental Design Agent generates a wet lab protocol: synthesize the top 5, run binding assays, measure cellular activity. The synthesis requests go to the CRO queue. Within two weeks, lab results are back. Three compounds show potency in the single-digit nanomolar range. One becomes the lead candidate.
+          </p>
+          <p>
+            Elapsed time from target brief to lead candidate: 6 weeks. Historical baseline: 18–24 months.
+          </p>
+        </div>
+
+        <!-- S3: WHY AGENTIC FITS -->
+        <h2>Why Drug Discovery Is Built for Multi-Agent AI</h2>
+
+        <p>
+          Drug discovery is not a single task — it is a cascade of heterogeneous sub-problems, each requiring different expertise, different data sources, and different computational tools. This heterogeneity is precisely what makes it an exceptional fit for a multi-agent architecture.
+        </p>
+
+        <div class="property-grid">
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(34,211,238,0.12);">🔬</div>
+            <div class="prop-title">Parallelizable Hypothesis Space</div>
+            <div class="prop-desc">Unlike sequential laboratory workflows, computational experiments can be run in parallel at massive scale. A multi-agent system can simultaneously explore thousands of structural variants, where a human team can evaluate dozens per month. The search space advantage is multiplicative, not additive.</div>
+          </div>
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(167,139,250,0.12);">📚</div>
+            <div class="prop-title">Rich Domain Knowledge, Machine-Readable</div>
+            <div class="prop-desc">PubMed contains 37 million articles. The PDB holds 220,000 protein structures. ChEMBL has bioactivity data on 2.4 million compounds. This knowledge exists in structured, queryable form. Agents can retrieve, synthesize, and apply it at a scale no human research team could match.</div>
+          </div>
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(52,211,153,0.12);">🔄</div>
+            <div class="prop-title">Computational Verification Before Lab</div>
+            <div class="prop-desc">Every hypothesis — "does this molecule bind the target?" — can be computationally evaluated before expensive lab synthesis. Docking simulations, property predictions, and molecular dynamics provide a noisy-but-informative signal that agents can use to prune the search space by 99%+ before a single experiment runs.</div>
+          </div>
+        </div>
+
+        <div class="callout callout-science">
+          <div class="callout-label">The Unique Challenge: Long Feedback Loops</div>
+          <p>Unlike the software engineering and SOC use cases from previous essays, drug discovery operates on feedback loops measured in weeks and months, not seconds. A wet lab experiment requested today returns results in two to four weeks. This long horizon means agents must maintain coherent hypotheses across extended periods, gracefully handle incoming experimental data that may contradict prior assumptions, and manage a portfolio of parallel exploration threads without losing track of what was tried, what was learned, and why.</p>
+        </div>
+
+        <!-- S4: ARCHITECTURE -->
+        <h2>System Architecture: Six Agents, Six Layers</h2>
+
+        <p>
+          The platform is organized around six specialized agents, each owning a distinct phase of the pre-clinical pipeline. Unlike the event-driven SOC platform, the drug discovery system operates on a <strong>portfolio management model</strong>: the orchestrator maintains a portfolio of drug candidates at various stages of investigation, routing each candidate to the appropriate agent based on its current state and the available computational resources.
+        </p>
+
+        <!-- SVG DIAGRAM -->
+        <div class="diagram-section">
+          <div class="diagram-title">Multi-Agent Drug Discovery Platform — System Architecture</div>
+          <div class="diagram-container">
+            <svg viewBox="0 0 860 730" xmlns="http://www.w3.org/2000/svg" font-family="Inter, -apple-system, sans-serif">
+              <defs>
+                <marker id="arr-s" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#64748B"/></marker>
+                <marker id="arr-d" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94A3B8"/></marker>
+                <marker id="arr-c" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#22D3EE"/></marker>
+              </defs>
+
+              <!-- L1: DATA SOURCES -->
+              <rect x="20" y="18" width="820" height="86" rx="10" fill="rgba(34,211,238,0.07)" stroke="#22D3EE" stroke-width="1.5"/>
+              <text x="36" y="38" font-size="9" font-weight="700" fill="#0891B2" letter-spacing="1.5">KNOWLEDGE &amp; DATA SOURCES</text>
+              <rect x="44"  y="46" width="128" height="44" rx="6" fill="white" stroke="#22D3EE" stroke-width="1.5"/>
+              <text x="108" y="64" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">PubMed / bioRxiv</text>
+              <text x="108" y="78" font-size="9" fill="#4A5568" text-anchor="middle">37M articles</text>
+              <rect x="186" y="46" width="128" height="44" rx="6" fill="white" stroke="#22D3EE" stroke-width="1.5"/>
+              <text x="250" y="64" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">PDB</text>
+              <text x="250" y="78" font-size="9" fill="#4A5568" text-anchor="middle">220K structures</text>
+              <rect x="328" y="46" width="128" height="44" rx="6" fill="white" stroke="#22D3EE" stroke-width="1.5"/>
+              <text x="392" y="64" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">ChEMBL</text>
+              <text x="392" y="78" font-size="9" fill="#4A5568" text-anchor="middle">Bioactivity data</text>
+              <rect x="470" y="46" width="128" height="44" rx="6" fill="white" stroke="#22D3EE" stroke-width="1.5"/>
+              <text x="534" y="64" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">ENAMINE REAL</text>
+              <text x="534" y="78" font-size="9" fill="#4A5568" text-anchor="middle">Compound libraries</text>
+              <rect x="612" y="46" width="128" height="44" rx="6" fill="white" stroke="#22D3EE" stroke-width="1.5"/>
+              <text x="676" y="64" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">UniProt / OMIM</text>
+              <text x="676" y="78" font-size="9" fill="#4A5568" text-anchor="middle">Target biology</text>
+
+              <!-- L2: ORCHESTRATION -->
+              <rect x="20" y="128" width="820" height="72" rx="10" fill="rgba(167,139,250,0.08)" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="36" y="148" font-size="9" font-weight="700" fill="#7C3AED" letter-spacing="1.5">ORCHESTRATION — PORTFOLIO MANAGER</text>
+              <rect x="50" y="155" width="200" height="36" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="150" y="178" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Candidate Portfolio Tracker</text>
+              <rect x="268" y="155" width="200" height="36" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="368" y="178" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Hypothesis Tree Manager</text>
+              <rect x="486" y="155" width="180" height="36" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="576" y="178" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Resource Scheduler</text>
+              <rect x="684" y="155" width="136" height="36" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="752" y="178" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Priority Ranker</text>
+
+              <!-- L3: AGENTS -->
+              <rect x="20" y="244" width="820" height="106" rx="10" fill="rgba(34,211,238,0.07)" stroke="#22D3EE" stroke-width="1.5"/>
+              <text x="36" y="264" font-size="9" font-weight="700" fill="#0891B2" letter-spacing="1.5">AGENT LAYER</text>
+              <rect x="30"  y="272" width="126" height="62" rx="6" fill="white" stroke="#22D3EE" stroke-width="2"/>
+              <text x="93"  y="297" font-size="17" text-anchor="middle">🎯</text>
+              <text x="93"  y="318" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Target Agent</text>
+              <rect x="170" y="272" width="126" height="62" rx="6" fill="white" stroke="#22D3EE" stroke-width="2"/>
+              <text x="233" y="297" font-size="17" text-anchor="middle">🔍</text>
+              <text x="233" y="318" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Hit Finder</text>
+              <rect x="310" y="272" width="126" height="62" rx="6" fill="white" stroke="#22D3EE" stroke-width="2"/>
+              <text x="373" y="297" font-size="17" text-anchor="middle">⚗️</text>
+              <text x="373" y="318" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Lead Optimizer</text>
+              <rect x="450" y="272" width="126" height="62" rx="6" fill="white" stroke="#22D3EE" stroke-width="2"/>
+              <text x="513" y="297" font-size="17" text-anchor="middle">📖</text>
+              <text x="513" y="318" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Literature Miner</text>
+              <rect x="590" y="272" width="126" height="62" rx="6" fill="white" stroke="#22D3EE" stroke-width="2"/>
+              <text x="653" y="297" font-size="17" text-anchor="middle">🧫</text>
+              <text x="653" y="318" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Expt. Designer</text>
+              <rect x="730" y="272" width="100" height="62" rx="6" fill="white" stroke="#22D3EE" stroke-width="2"/>
+              <text x="780" y="297" font-size="17" text-anchor="middle">🛡</text>
+              <text x="780" y="318" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Safety Agent</text>
+
+              <!-- L4: SCIENTIFIC TOOLS -->
+              <rect x="20" y="394" width="820" height="86" rx="10" fill="rgba(52,211,153,0.07)" stroke="#34D399" stroke-width="1.5"/>
+              <text x="36" y="414" font-size="9" font-weight="700" fill="#059669" letter-spacing="1.5">SCIENTIFIC TOOL LAYER</text>
+              <rect x="40"  y="422" width="148" height="44" rx="6" fill="white" stroke="#34D399" stroke-width="1.5"/>
+              <text x="114" y="440" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Molecular Docking</text>
+              <text x="114" y="454" font-size="9" fill="#4A5568" text-anchor="middle">AutoDock Vina</text>
+              <rect x="204" y="422" width="148" height="44" rx="6" fill="white" stroke="#34D399" stroke-width="1.5"/>
+              <text x="278" y="440" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">ADMET Predictor</text>
+              <text x="278" y="454" font-size="9" fill="#4A5568" text-anchor="middle">SwissADME / ADMETlab</text>
+              <rect x="368" y="422" width="148" height="44" rx="6" fill="white" stroke="#34D399" stroke-width="1.5"/>
+              <text x="442" y="440" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Generative Design</text>
+              <text x="442" y="454" font-size="9" fill="#4A5568" text-anchor="middle">DiffSBDD / TargetDiff</text>
+              <rect x="532" y="422" width="148" height="44" rx="6" fill="white" stroke="#34D399" stroke-width="1.5"/>
+              <text x="606" y="440" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Property GNN</text>
+              <text x="606" y="454" font-size="9" fill="#4A5568" text-anchor="middle">SchNet / DimeNet++</text>
+              <rect x="696" y="422" width="132" height="44" rx="6" fill="white" stroke="#34D399" stroke-width="1.5"/>
+              <text x="762" y="440" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">MD Simulation</text>
+              <text x="762" y="454" font-size="9" fill="#4A5568" text-anchor="middle">OpenMM / GROMACS</text>
+
+              <!-- L5: MEMORY & HYPOTHESIS -->
+              <rect x="20" y="524" width="820" height="82" rx="10" fill="rgba(251,191,36,0.07)" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="36" y="544" font-size="9" font-weight="700" fill="#D97706" letter-spacing="1.5">MEMORY &amp; HYPOTHESIS LAYER</text>
+              <rect x="44"  y="552" width="184" height="40" rx="6" fill="white" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="136" y="577" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Hypothesis Tree Store</text>
+              <rect x="244" y="552" width="184" height="40" rx="6" fill="white" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="336" y="577" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">SAR Memory (Vector DB)</text>
+              <rect x="444" y="552" width="184" height="40" rx="6" fill="white" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="536" y="577" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Experimental Results Log</text>
+              <rect x="644" y="552" width="172" height="40" rx="6" fill="white" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="730" y="577" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Failure Library</text>
+
+              <!-- L6: INFRASTRUCTURE -->
+              <rect x="20" y="650" width="820" height="66" rx="10" fill="rgba(148,163,184,0.08)" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="36" y="670" font-size="9" font-weight="700" fill="#64748B" letter-spacing="1.5">INFRASTRUCTURE LAYER</text>
+              <rect x="44"  y="676" width="162" height="32" rx="6" fill="white" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="125" y="697" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">GPU Cluster (HPC)</text>
+              <rect x="220" y="676" width="162" height="32" rx="6" fill="white" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="301" y="697" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">LLM API</text>
+              <rect x="396" y="676" width="162" height="32" rx="6" fill="white" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="477" y="697" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">CRO Integration API</text>
+              <rect x="572" y="676" width="252" height="32" rx="6" fill="white" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="698" y="697" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">Audit &amp; Experiment Tracker</text>
+
+              <!-- ARROWS -->
+              <line x1="430" y1="104" x2="430" y2="126" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr-s)"/>
+              <line x1="430" y1="200" x2="430" y2="242" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr-s)"/>
+              <!-- Agent ↔ Tools (bidirectional) -->
+              <line x1="428" y1="350" x2="428" y2="392" stroke="#34D399" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-d)"/>
+              <line x1="432" y1="392" x2="432" y2="350" stroke="#34D399" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-d)"/>
+              <!-- Agent ↔ Memory (bidirectional) -->
+              <line x1="420" y1="350" x2="316" y2="522" stroke="#FBBF24" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arr-d)"/>
+              <!-- Tools → Infra -->
+              <line x1="430" y1="610" x2="430" y2="648" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr-s)"/>
+            </svg>
+          </div>
+          <p class="diagram-caption">Figure 1: Multi-Agent Drug Discovery Platform — six layers from knowledge sources to infrastructure. The Scientific Tool Layer distinguishes this architecture: agents do not reason from text alone but actively dispatch specialized computational experiments and integrate their results.</p>
+        </div>
+
+        <p>
+          The defining architectural characteristic of this system — compared to the two prior essays — is the <strong>Scientific Tool Layer</strong>. In software engineering and security, agents primarily reason over text and structured data. In drug discovery, the most important agent actions are the dispatch of specialized computational experiments: molecular docking runs, generative design calls, molecular dynamics simulations, ADMET predictions. The quality of the system depends as much on the tool integration as on the language model reasoning.
+        </p>
+
+        <!-- S5: DEEP DIVE 1 — HYPOTHESIS TREES -->
+        <h2>Deep Dive I: Long-Horizon Planning and Hypothesis Trees</h2>
+
+        <p>
+          Drug discovery is the most demanding long-horizon planning challenge of any use case in this essay series. A software engineering agent operates on a horizon of hours to days. A SOC agent operates in seconds to minutes. A drug discovery agent must maintain coherent, evolving hypotheses across a timeline measured in weeks and months — surviving personnel changes, unexpected experimental results, and the constant temptation to over-commit to a promising-looking but ultimately flawed candidate.
+        </p>
+
+        <p>
+          The core data structure for managing this complexity is the <strong>hypothesis tree</strong>: a rooted tree where each node represents a drug candidate (or a class of candidates) at a specific point in the discovery pipeline, annotated with its computational and experimental evidence, its current confidence score, and the actions taken and planned.
+        </p>
+
+        <h3>The Hypothesis Tree Data Structure</h3>
+
+        <p>
+          Each node in the hypothesis tree represents a "lead series" — a chemical scaffold and its variants being explored together. The tree branches when the Lead Optimizer proposes distinct structural modifications; branches are pruned when evidence (computational or experimental) drops a series' confidence below the threshold. The tree is the system's memory of its own exploration: which parts of chemical space have been visited, what was found, and why certain paths were abandoned.
+        </p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Python</span>
+            <button class="code-copy" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code class="language-python">from __future__ import annotations
+from dataclasses import dataclass, field
+from typing import Optional
+from datetime import datetime
+from enum import Enum
+import uuid
+
+class CandidateStage(Enum):
+    TARGET_VALIDATED   = "target_validated"
+    HIT_IDENTIFIED     = "hit_identified"
+    LEAD_OPTIMIZING    = "lead_optimizing"
+    ADMET_PROFILING    = "admet_profiling"
+    PRECLINICAL        = "preclinical"
+    ABANDONED          = "abandoned"
+
+@dataclass
+class MolecularEvidence:
+    """A single piece of evidence for or against a drug candidate."""
+    evidence_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    source: str = ""                   # "docking", "admet", "literature", "wet_lab"
+    metric: str = ""                   # e.g. "docking_score", "clogP", "IC50_nM"
+    value: float = 0.0
+    unit: str = ""
+    threshold: float = 0.0            # Pass/fail threshold for this metric
+    passed: bool = False
+    timestamp: datetime = field(default_factory=datetime.utcnow)
+    notes: str = ""
+
+@dataclass
+class HypothesisNode:
+    """
+    A node in the hypothesis tree — one lead series being explored.
+    Each node tracks the full evidence history and spawns children
+    when the Lead Optimizer proposes distinct structural directions.
+    """
+    node_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    parent_id: Optional[str] = None
+    children_ids: list[str] = field(default_factory=list)
+
+    # Chemical identity
+    scaffold_smiles: str = ""          # SMILES string of the core scaffold
+    variant_smiles: list[str] = field(default_factory=list)  # Variants being explored
+    series_name: str = ""             # Human-readable name
+
+    # Pipeline state
+    stage: CandidateStage = CandidateStage.HIT_IDENTIFIED
+    confidence: float = 0.5           # 0.0–1.0 posterior probability of success
+    priority_score: float = 0.0       # Composite score for resource allocation
+
+    # Evidence record
+    evidence: list[MolecularEvidence] = field(default_factory=list)
+    failed_metrics: list[str] = field(default_factory=list)
+    pending_experiments: list[str] = field(default_factory=list)
+
+    # Lifecycle
+    created_at: datetime = field(default_factory=datetime.utcnow)
+    last_updated: datetime = field(default_factory=datetime.utcnow)
+    abandoned_reason: Optional[str] = None
+
+    def add_evidence(self, evidence: MolecularEvidence) -> float:
+        """
+        Integrate new evidence and update confidence using a
+        simple multiplicative Bayesian update.
+        Returns the updated confidence score.
+        """
+        self.evidence.append(evidence)
+        self.last_updated = datetime.utcnow()
+
+        if evidence.passed:
+            # Evidence supports the hypothesis
+            likelihood_ratio = 3.0    # Strong pass: 3x more likely if candidate is good
+        else:
+            # Evidence against the hypothesis
+            self.failed_metrics.append(evidence.metric)
+            likelihood_ratio = 0.25   # Fail: 4x less likely to succeed
+
+        # Log-odds update (more numerically stable)
+        import math
+        log_odds = math.log(self.confidence / (1 - self.confidence + 1e-9))
+        log_odds += math.log(likelihood_ratio)
+        self.confidence = 1.0 / (1.0 + math.exp(-log_odds))
+        self.confidence = max(0.01, min(0.99, self.confidence))
+        return self.confidence
+
+    def should_abandon(self, min_confidence: float = 0.15, max_failed: int = 3) -> bool:
+        """Prune this branch if confidence is too low or too many metrics have failed."""
+        return self.confidence < min_confidence or len(self.failed_metrics) >= max_failed
+
+    def compute_priority(self, stage_weights: dict) -> float:
+        """
+        Priority = confidence × stage_multiplier × recency_factor.
+        Higher-stage candidates get more resources (sunk cost justification
+        is real in drug discovery — late-stage failures are far more expensive).
+        """
+        stage_mult = stage_weights.get(self.stage.value, 1.0)
+        days_idle = (datetime.utcnow() - self.last_updated).days
+        recency = max(0.5, 1.0 - 0.05 * days_idle)   # Decay 5% per idle day
+        self.priority_score = self.confidence * stage_mult * recency
+        return self.priority_score
+
+
+class HypothesisTree:
+    """
+    Portfolio-level manager of all drug candidate hypotheses.
+    Maintains the tree structure, routes agents to high-priority nodes,
+    and prunes dead branches.
+    """
+    STAGE_WEIGHTS = {
+        "hit_identified":   1.0,
+        "lead_optimizing":  2.0,
+        "admet_profiling":  3.5,
+        "preclinical":      6.0,
+    }
+
+    def __init__(self, target_name: str):
+        self.target_name = target_name
+        self.nodes: dict[str, HypothesisNode] = {}
+        self.root_ids: list[str] = []     # Multiple starting points possible
+
+    def add_node(self, node: HypothesisNode) -> str:
+        self.nodes[node.node_id] = node
+        if node.parent_id is None:
+            self.root_ids.append(node.node_id)
+        else:
+            parent = self.nodes.get(node.parent_id)
+            if parent:
+                parent.children_ids.append(node.node_id)
+        return node.node_id
+
+    def branch(self, parent_id: str, new_scaffolds: list[str]) -> list[str]:
+        """
+        Spawn child nodes from a parent when the Lead Optimizer
+        proposes multiple structural directions to explore in parallel.
+        """
+        parent = self.nodes[parent_id]
+        child_ids = []
+        for i, smiles in enumerate(new_scaffolds):
+            child = HypothesisNode(
+                parent_id=parent_id,
+                scaffold_smiles=smiles,
+                series_name=f"{parent.series_name}-v{i+1}",
+                stage=parent.stage,
+                confidence=parent.confidence * 0.85,   # Slight prior discount for unvalidated variants
+            )
+            self.add_node(child)
+            child_ids.append(child.node_id)
+        return child_ids
+
+    def prune(self) -> list[str]:
+        """Mark low-confidence nodes as abandoned. Returns pruned node IDs."""
+        pruned = []
+        for node in self.nodes.values():
+            if node.stage != CandidateStage.ABANDONED and node.should_abandon():
+                node.stage = CandidateStage.ABANDONED
+                node.abandoned_reason = (
+                    f"Confidence {node.confidence:.2f} below threshold "
+                    f"or {len(node.failed_metrics)} metrics failed: {node.failed_metrics}"
+                )
+                pruned.append(node.node_id)
+        return pruned
+
+    def top_candidates(self, n: int = 5) -> list[HypothesisNode]:
+        """Return the N highest-priority active candidates for agent assignment."""
+        active = [
+            n for n in self.nodes.values()
+            if n.stage != CandidateStage.ABANDONED
+        ]
+        for node in active:
+            node.compute_priority(self.STAGE_WEIGHTS)
+        return sorted(active, key=lambda n: n.priority_score, reverse=True)[:n]
+</code></pre>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-label">The Sunk Cost Problem in AI Drug Discovery</div>
+          <p>The stage weight multipliers in <code>compute_priority</code> are not just an optimization heuristic — they encode a real scientific and economic judgment. A candidate that has survived ADMET profiling has already consumed significant computational and potentially wet lab resources. Its survival to that stage is itself evidence of quality. Abandoning it at the first sign of difficulty may not be rational. The weights should be calibrated against your organization's historical data on how often late-stage candidates recover from apparent weaknesses — and reviewed regularly as that data grows.</p>
+        </div>
+
+        <h3>Managing the Long Feedback Loop</h3>
+
+        <p>
+          The most operationally difficult aspect of long-horizon drug discovery is that <em>experiments take weeks</em>. The system dispatches a synthesis and assay request to a CRO (Contract Research Organization) and must continue functioning intelligently — prioritizing other candidates, running more computational experiments, reading new literature — for 2–4 weeks while awaiting results. When results arrive, they must be correctly attributed to the right hypothesis node and used to update confidence appropriately.
+        </p>
+
+        <p>
+          The design for this is a <strong>pending experiment registry</strong>: every experiment dispatched is logged with a unique experiment ID, the hypothesis node it belongs to, the metric it will measure, the expected return window, and the callback action to take when results arrive. The Experimental Design Agent monitors this registry and routes incoming CRO data to the correct node's <code>add_evidence()</code> method. This decoupling — dispatch now, update asynchronously on receipt — is what allows the system to run dozens of investigation threads in parallel without blocking on any individual wet lab result.
+        </p>
+
+        <!-- S6: DEEP DIVE 2 — TOOL AUGMENTED REASONING -->
+        <h2>Deep Dive II: Tool-Augmented Scientific Reasoning</h2>
+
+        <p>
+          The hypothesis tree tells agents <em>what</em> to investigate. The scientific tool layer tells them <em>how</em>. This is where drug discovery departs most sharply from the other use cases in this series: the agent's primary actions are not text generation or API calls to business systems — they are dispatches of specialized scientific computation that require careful result interpretation.
+        </p>
+
+        <p>
+          Each scientific tool has a distinct computational profile, a distinct output format, and a distinct epistemic role in the discovery workflow. The Lead Optimizer Agent, for example, must know not just how to call the docking engine, but how to interpret a docking score in the context of the target's binding site flexibility, how to combine docking scores with property predictions into a composite assessment, and when a poor docking score is a signal to abandon versus a signal to try a different pose.
+        </p>
+
+        <h3>The Scientific Tool Registry</h3>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Python</span>
+            <button class="code-copy" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code class="language-python">from dataclasses import dataclass
+from typing import Callable, Any
+from enum import Enum
+
+class ToolCategory(Enum):
+    STRUCTURE_BASED  = "structure_based"   # Works with 3D protein/ligand structure
+    LIGAND_BASED     = "ligand_based"      # Works from molecule alone, no protein
+    GENERATIVE       = "generative"        # Proposes new molecular structures
+    LITERATURE       = "literature"        # Retrieves and synthesizes text
+    EXPERIMENTAL     = "experimental"      # Dispatches to wet lab / CRO
+
+@dataclass
+class ScientificTool:
+    name: str
+    category: ToolCategory
+    compute_cost: str          # "low", "medium", "high", "very_high"
+    latency: str               # "seconds", "minutes", "hours", "days"
+    output_type: str           # e.g. "docking_score", "smiles_list", "property_dict"
+    interpretation_guide: str  # Plain-English guide for the agent LLM
+    call_fn: Callable
+
+# Example: molecular docking tool
+def run_vina_docking(smiles: str, receptor_pdb: str, exhaustiveness: int = 8) -> dict:
+    """
+    Run AutoDock Vina docking simulation.
+    Returns best binding pose and docking score (kcal/mol, lower = better binding).
+    """
+    # In production: call Vina subprocess or a cloud docking API
+    # Returns structured result for agent consumption
+    return {
+        "smiles": smiles,
+        "receptor": receptor_pdb,
+        "best_score_kcal_mol": -8.4,      # Hypothetical result
+        "n_poses": 9,
+        "top_pose_rmsd": 1.2,
+        "interpretation": {
+            "strong_binder": True,         # Score < -7.0 typically indicates strong binding
+            "confidence": "medium",        # Vina scores have ~1 kcal/mol uncertainty
+            "recommended_action": "advance_to_admet",
+        }
+    }
+
+# Example: ADMET prediction tool
+def predict_admet(smiles: str) -> dict:
+    """
+    Predict ADMET properties using ensemble ML models.
+    Returns pass/fail against standard drug-likeness thresholds.
+    """
+    return {
+        "smiles": smiles,
+        "properties": {
+            "clogP":          2.3,          # Lipophilicity (Lipinski: < 5)
+            "MW":             412.0,        # Molecular weight (< 500)
+            "HBD":            2,            # H-bond donors (< 5)
+            "HBA":            6,            # H-bond acceptors (< 10)
+            "TPSA":           87.3,         # Topological polar surface area
+            "solubility_mgmL": 0.18,        # Aqueous solubility
+            "hERG_pIC50":     4.2,          # Cardiac toxicity predictor (< 6 = safer)
+            "ames_mutagenic": False,
+            "BBB_penetrant":  False,
+        },
+        "lipinski_ro5": True,
+        "veber_rules":  True,
+        "predicted_oral_bioavailability": 0.61,
+        "flags": ["low_solubility"],        # Properties below desired threshold
+    }
+
+# Example: generative design tool
+def generate_analogs(seed_smiles: str, optimize_for: list[str], n_proposals: int = 20) -> dict:
+    """
+    Use a diffusion-based generative model (DiffSBDD / TargetDiff) to propose
+    structural analogs of the seed molecule optimized for the given objectives.
+    """
+    # In production: call generative model API with target pocket + seed molecule
+    return {
+        "seed_smiles": seed_smiles,
+        "optimize_for": optimize_for,    # e.g. ["solubility", "binding_affinity"]
+        "proposals": [
+            {"smiles": "CCO...", "predicted_improvement": {"solubility": +0.4}},
+            # ... n_proposals total
+        ],
+        "diversity_score": 0.72,         # How structurally diverse are the proposals
+    }
+
+# Tool registry — agents query this to decide which tool to use
+SCIENTIFIC_TOOLS: dict[str, ScientificTool] = {
+    "molecular_docking": ScientificTool(
+        name="molecular_docking",
+        category=ToolCategory.STRUCTURE_BASED,
+        compute_cost="medium",
+        latency="minutes",
+        output_type="docking_score",
+        interpretation_guide=(
+            "Scores below -7 kcal/mol indicate likely binding. Scores above -5 indicate "
+            "unlikely binding. Scores between -5 and -7 are ambiguous — consider running "
+            "with higher exhaustiveness or cross-validating with a second docking tool. "
+            "Always cross-reference with ADMET before advancing."
+        ),
+        call_fn=run_vina_docking,
+    ),
+    "admet_prediction": ScientificTool(
+        name="admet_prediction",
+        category=ToolCategory.LIGAND_BASED,
+        compute_cost="low",
+        latency="seconds",
+        output_type="property_dict",
+        interpretation_guide=(
+            "Check Lipinski Ro5 and Veber rules for oral bioavailability potential. "
+            "Flag any hERG pIC50 > 6 as a cardiac safety concern requiring further evaluation. "
+            "Solubility below 0.1 mg/mL is a development risk — consider structural modification "
+            "to improve before advancing. Ames mutagenicity positive is a hard stop."
+        ),
+        call_fn=predict_admet,
+    ),
+    "generative_design": ScientificTool(
+        name="generative_design",
+        category=ToolCategory.GENERATIVE,
+        compute_cost="high",
+        latency="minutes",
+        output_type="smiles_list",
+        interpretation_guide=(
+            "Proposals are hypothesis starters, not validated hits. Run each proposal "
+            "through ADMET prediction before docking. Prioritize proposals with diversity_score > 0.6 "
+            "to ensure you are exploring new chemical space, not just slight permutations of the seed."
+        ),
+        call_fn=generate_analogs,
+    ),
+}
+</code></pre>
+        </div>
+
+        <h3>Composing Tool Calls into Investigation Workflows</h3>
+
+        <p>
+          Individual tool calls are useful. Composed sequences of tool calls, guided by agent reasoning between each step, are transformative. A well-designed Lead Optimizer Agent follows a principled workflow for each candidate:
+        </p>
+
+        <ol>
+          <li><strong>Screen:</strong> Run fast ADMET prediction on all candidates (seconds per molecule) to eliminate ~60% with obvious property violations.</li>
+          <li><strong>Dock:</strong> Run molecular docking on the survivors. Eliminates a further ~70% with poor predicted binding affinity.</li>
+          <li><strong>Analyze:</strong> Inspect the docking poses of the survivors. Use LLM reasoning to identify which specific interactions with the target are driving the score — and which structural features could be modified to improve them.</li>
+          <li><strong>Generate:</strong> Dispatch the generative design tool with the binding analysis as context, requesting structural modifications that target specific improvements (e.g., "improve solubility while preserving the hydrogen bond to His95").</li>
+          <li><strong>Iterate:</strong> Return to step 1 with the new proposals. Repeat for 3–5 cycles.</li>
+          <li><strong>Select:</strong> Candidates that survive 3+ cycles of computational filtering advance to experimental validation requests.</li>
+        </ol>
+
+        <div class="callout callout-science">
+          <div class="callout-label">The Interpretation Layer Is as Important as the Tool</div>
+          <p>A docking score of -7.2 kcal/mol means nothing to an LLM that has not been told the interpretation context: that this score threshold suggests likely binding, that Vina scores have approximately ±1 kcal/mol uncertainty, and that this result should be cross-validated with ADMET before concluding anything. The <code>interpretation_guide</code> field in <code>ScientificTool</code> is not documentation — it is injected into the agent's system prompt before each tool call, giving it the domain expertise it needs to interpret the raw output intelligently rather than treating a number as self-explanatory.</p>
+        </div>
+
+        <h3>Structure-Activity Relationship (SAR) Memory</h3>
+
+        <p>
+          As the system runs thousands of docking and ADMET experiments, it accumulates a body of structure-activity relationship data: which molecular features correlate with good binding, which correlate with ADMET failures, which scaffolds consistently underperform. This data is invaluable — it is the kind of institutional knowledge that takes medicinal chemistry teams years to develop manually.
+        </p>
+
+        <p>
+          The SAR Memory layer (backed by a vector database) stores every evaluated molecule as an embedding alongside its experimental outcomes. When the Lead Optimizer starts working on a new candidate, it queries SAR Memory for structurally similar molecules and their results: <em>"the last three compounds with a pyridine ring at this position all failed the hERG assay — consider a bioisosteric replacement before investing in synthesis."</em> This converts the system's accumulated experimental history into actionable prior knowledge, compressing the learning curve that new chemical series would otherwise require.
+        </p>
+
+        <!-- S7: TRADEOFFS -->
+        <h2>Tradeoffs and Design Decisions</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Decision</th>
+                <th>Choice Made</th>
+                <th>Alternative</th>
+                <th>Rationale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Planning horizon</strong></td>
+                <td>Hypothesis tree with confidence decay</td>
+                <td>Linear pipeline with checkpoints</td>
+                <td>Drug discovery is inherently non-linear — a series abandoned as a hit may resurface as a viable lead after a structural analogy from a different series. Trees preserve the exploration history; linear pipelines discard it.</td>
+              </tr>
+              <tr>
+                <td><strong>Tool invocation model</strong></td>
+                <td>Agent-directed, interpretation-guided</td>
+                <td>Automated sequential pipeline</td>
+                <td>Automated pipelines cannot adapt when a tool output is ambiguous or contradictory. Agent-directed invocation allows the LLM to reason about anomalous results and decide whether to re-run, cross-validate, or escalate to a domain expert.</td>
+              </tr>
+              <tr>
+                <td><strong>Candidate portfolio size</strong></td>
+                <td>Active: 20–50 nodes; archive: unlimited</td>
+                <td>No limit (explore everything)</td>
+                <td>Compute resources are finite. An unbounded portfolio leads to shallow exploration of many series rather than deep exploration of the most promising ones. The priority ranker ensures resources concentrate on the best candidates.</td>
+              </tr>
+              <tr>
+                <td><strong>Generative model choice</strong></td>
+                <td>Diffusion-based (DiffSBDD, TargetDiff)</td>
+                <td>Variational autoencoder (REINVENT)</td>
+                <td>Diffusion models generate 3D-aware proposals that consider the binding pocket geometry, not just 2D molecular structure. For structure-based drug design, this produces proposals that are geometrically compatible with the target from the start, reducing docking failures on generated molecules.</td>
+              </tr>
+              <tr>
+                <td><strong>Wet lab integration</strong></td>
+                <td>Async CRO API with pending experiment registry</td>
+                <td>In-house robotic synthesis</td>
+                <td>CRO integration is lower capital expenditure and faster to deploy. The async registry design means the platform is not blocked waiting for lab results — it continues computational work on other candidates during the 2–4 week turnaround. In-house robotics would reduce latency but require significant infrastructure investment.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- S8: PRODUCTION -->
+        <h2>Production Considerations</h2>
+
+        <h3>Regulatory and IP Documentation</h3>
+
+        <p>
+          Every compound advanced to synthesis must have a complete, auditable computational pedigree: which tools were run, with which parameters, producing which outputs, leading to which decisions. This is not optional — it is a regulatory requirement for IND filing and a legal necessity for patent prosecution (establishing priority date and inventive step). The Audit &amp; Experiment Tracker in the Infrastructure Layer is the system of record for this data. Every tool call, every evidence update, every branching and pruning decision is logged with full provenance. Treat this layer with the same rigor as a lab notebook: it is, in effect, a computational lab notebook.
+        </p>
+
+        <h3>The Hallucination Problem in Scientific Reasoning</h3>
+
+        <p>
+          LLMs hallucinate. In a coding agent, a hallucinated function call produces a compile error. In a security agent, a hallucinated alert attribution is caught by human review. In a drug discovery agent, a hallucinated claim about a molecule's properties could advance a candidate that should have been abandoned, wasting weeks of synthesis time and tens of thousands of dollars in CRO spend.
+        </p>
+
+        <p>
+          The mitigation strategy is structural: agents are not allowed to assert molecular properties — only tools are. Every property claim in the system (binding affinity, solubility, toxicity) must be traceable to a specific tool call with a specific output. LLM reasoning is used only for interpretation and decision-making, not for generating property values. Any agent response that asserts a quantitative molecular property without a corresponding tool-call citation is flagged by the audit layer for human review.
+        </p>
+
+        <h3>Compute Cost at Scale</h3>
+
+        <p>
+          Molecular docking of a single compound against a target takes 1–15 minutes on a single CPU core. Screening a library of 2 million compounds requires parallelization across hundreds of GPU/CPU cores, costing $2,000–$8,000 in cloud compute. Molecular dynamics simulations for binding free energy estimation are 10–100x more expensive. The Resource Scheduler in the Orchestration Layer must balance exploration breadth (run many cheap docking screens) against exploitation depth (run expensive MD simulations on the best candidates). A tiered compute model — cheap screens first, expensive validation only for top candidates — reduces total compute cost by 80–90% with minimal impact on candidate quality.
+        </p>
+
+        <!-- S9: CONCLUSION -->
+        <h2>Conclusion: The Scientist That Never Loses a Thread</h2>
+
+        <p>
+          The drug discovery challenge is, at its core, a memory and attention problem. Human research teams lose threads. Promising series get abandoned because the champion who understood them moved to a different project. Negative results get filed away and forgotten, only to be re-discovered expensively two years later. The institutional knowledge of what has been tried and why it failed is notoriously difficult to transmit across team changes and time.
+        </p>
+
+        <p>
+          The multi-agent platform designed in this essay addresses these failures directly. The hypothesis tree preserves every exploration decision and its evidence base. The SAR Memory converts experimental history into retrievable prior knowledge. The long-horizon planning architecture keeps dozens of candidate threads active simultaneously, without any of them being dropped because a researcher went on parental leave or changed teams.
+        </p>
+
+        <div class="pull-quote">
+          <p>"The most valuable thing an agentic drug discovery system provides is not speed. It is memory — the ability to learn systematically from every failed candidate and carry that knowledge forward into every future decision."</p>
+        </div>
+
+        <p>
+          The next essay in this series turns to a domain where the planning horizon is shorter — seconds and minutes rather than months — but the scale of coordination is far larger: autonomous supply chain management, where thousands of decision agents must respond to real-time disruptions across global logistics networks without a central planner that can see everything at once.
+        </p>
+
+      </div><!-- end .article-body -->
+
+      <footer class="article-footer">
+        <div class="author-bio-card">
+          <div class="bio-avatar">SJ</div>
+          <div>
+            <div class="bio-name">Sushant Joshi</div>
+            <div class="bio-desc">Principal Engineer building and thinking about AI systems at scale. Neural Blueprints is a record of that thinking — one deeply researched system design per week.</div>
+          </div>
+        </div>
+      </footer>
+
+    </div><!-- end .article-wrapper -->
+  </div><!-- end .layout -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof hljs !== 'undefined') hljs.highlightAll();
+      else window.addEventListener('load', function() { if (typeof hljs !== 'undefined') hljs.highlightAll(); });
+    });
+    function copyCode(btn) {
+      const pre = btn.closest('.code-block').querySelector('pre code');
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+      });
+    }
+    const hamburger = document.getElementById('hamburger');
+    const sidebar   = document.getElementById('sidebar');
+    const overlay   = document.getElementById('overlay');
+    function toggleSidebar() { sidebar.classList.toggle('open'); overlay.classList.toggle('visible'); }
+    if (hamburger) hamburger.addEventListener('click', toggleSidebar);
+    if (overlay)   overlay.addEventListener('click', toggleSidebar);
+  </script>
+</body>
+</html>
