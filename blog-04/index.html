@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Supply Chain That Runs Itself: Designing a Distributed Agent Network for Global Logistics — Neural Blueprints</title>
+  <meta name="description" content="Designing a federated agent network for autonomous supply chain management: decentralized coordination without a central planner, multi-timescale decision horizons, and agent negotiation protocols that beat the bullwhip effect.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+    :root {
+      --bg-body:        #F7F6F3;
+      --bg-sidebar:     #1A1D23;
+      --bg-card:        #FFFFFF;
+      --bg-callout-insight: #EEF2FF;
+      --bg-callout-warn:    #FFFBEB;
+      --bg-callout-code:    #ECFDF5;
+      --bg-callout-supply:  #F0FDF4;
+
+      --text-primary:   #0F1117;
+      --text-secondary: #4A5568;
+      --text-sidebar:   #E2E8F0;
+      --text-sidebar-muted: #718096;
+      --text-sidebar-active: #FFFFFF;
+
+      --accent:         #5B63FE;
+      --accent-hover:   #4348D4;
+      --accent-subtle:  #EEF2FF;
+
+      --border:         #E2E8F0;
+      --border-strong:  #CBD5E1;
+
+      --text-xs:    0.75rem;
+      --text-sm:    0.875rem;
+      --text-base:  1rem;
+      --text-lg:    1.125rem;
+      --text-xl:    1.25rem;
+      --text-2xl:   1.5rem;
+      --text-3xl:   1.875rem;
+      --text-4xl:   2.25rem;
+
+      --sidebar-width: 280px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-body); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+    .layout { display: grid; grid-template-columns: var(--sidebar-width) 1fr; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { background: var(--bg-sidebar); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; scrollbar-width: thin; scrollbar-color: #2D3748 transparent; }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 2px; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 28px 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .brand-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .brand-icon svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; }
+    .brand-name { font-size: var(--text-sm); font-weight: 700; color: var(--text-sidebar); letter-spacing: -0.01em; }
+    .brand-tagline { font-size: var(--text-xs); color: var(--text-sidebar-muted); margin-top: 2px; }
+    .nav-section { padding: 20px 12px 8px; flex: 1; }
+    .nav-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-sidebar-muted); padding: 0 8px; margin-bottom: 6px; }
+    .nav-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; border-radius: 6px; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; border-left: 3px solid transparent; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); text-decoration: none; }
+    .nav-item.active { border-left-color: var(--accent); background: rgba(91,99,254,0.12); }
+    .nav-item.active .nav-item-number, .nav-item.active .nav-item-title { color: var(--text-sidebar-active); }
+    .nav-item-number { font-size: var(--text-xs); font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-sidebar-muted); flex-shrink: 0; padding-top: 1px; }
+    .nav-item-title { font-size: var(--text-sm); font-weight: 500; color: var(--text-sidebar-muted); line-height: 1.4; }
+    .sidebar-footer { padding: 16px 20px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 16px; }
+    .sidebar-footer a { font-size: var(--text-xs); color: var(--text-sidebar-muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+    .sidebar-footer a:hover { color: var(--text-sidebar); }
+
+    /* ARTICLE */
+    .article-wrapper { padding: 56px 72px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 500; color: var(--text-secondary); text-decoration: none; margin-bottom: 40px; transition: color 0.15s; }
+    .back-link:hover { color: var(--accent); text-decoration: none; }
+    .article-header { max-width: 720px; margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+    .article-meta-top { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .post-number-badge { font-size: var(--text-xs); font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); background: #F1F5F9; padding: 3px 8px; border-radius: 4px; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .tag-agent    { background: rgba(52,211,153,0.12);  color: #059669; }
+    .tag-memory   { background: rgba(251,191,36,0.12);  color: #D97706; }
+    .tag-orch     { background: rgba(167,139,250,0.12); color: #7C3AED; }
+    .tag-security { background: rgba(248,113,113,0.12); color: #DC2626; }
+    .tag-threat   { background: rgba(251,146,60,0.12);  color: #EA580C; }
+    .tag-science  { background: rgba(34,211,238,0.12);  color: #0891B2; }
+    .tag-planning { background: rgba(251,191,36,0.12);  color: #D97706; }
+    .tag-supply   { background: rgba(16,185,129,0.12);  color: #047857; }
+    .tag-decentral{ background: rgba(99,102,241,0.12);  color: #4338CA; }
+    .article-title { font-size: var(--text-4xl); font-weight: 900; line-height: 1.15; letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 20px; }
+    .article-subtitle { font-size: var(--text-lg); color: var(--text-secondary); line-height: 1.75; margin-bottom: 28px; }
+    .article-meta-bottom { display: flex; align-items: center; gap: 20px; }
+    .author-info { display: flex; align-items: center; gap: 10px; }
+    .author-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #A78BFA); display: flex; align-items: center; justify-content: center; font-size: var(--text-sm); font-weight: 700; color: white; flex-shrink: 0; }
+    .author-name { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+    .author-role { font-size: var(--text-xs); color: var(--text-secondary); }
+    .meta-divider { color: var(--border-strong); }
+    .article-date-time { font-size: var(--text-sm); color: var(--text-secondary); }
+
+    /* BODY */
+    .article-body { max-width: 720px; font-size: var(--text-base); line-height: 1.8; color: var(--text-primary); }
+    .article-body p { margin-bottom: 1.4em; }
+    .article-body p.lead { font-size: var(--text-lg); line-height: 1.9; color: var(--text-secondary); margin-bottom: 1.6em; }
+    .article-body h2 { font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); margin-top: 3.5rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .article-body h3 { font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); margin-top: 2.2rem; margin-bottom: 0.7rem; }
+    .article-body ul, .article-body ol { margin-left: 1.5em; margin-bottom: 1.4em; }
+    .article-body li { margin-bottom: 0.4em; }
+    .article-body strong { font-weight: 600; }
+    .article-body code { font-family: 'JetBrains Mono', monospace; font-size: 0.875em; background: #F1F5F9; padding: 2px 6px; border-radius: 4px; color: #047857; }
+
+    .pull-quote { border-left: 4px solid var(--accent); padding: 20px 28px; margin: 2rem 0; background: var(--accent-subtle); border-radius: 0 8px 8px 0; }
+    .pull-quote p { font-size: var(--text-xl); font-weight: 500; font-style: italic; line-height: 1.5; color: var(--text-primary); margin: 0; }
+
+    .callout { border-radius: 0 8px 8px 0; padding: 16px 20px; margin: 1.6rem 0; }
+    .callout-label { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+    .callout p, .callout ul { margin-bottom: 0; font-size: var(--text-sm); line-height: 1.65; }
+    .callout-insight { border-left: 4px solid var(--accent); background: var(--bg-callout-insight); }
+    .callout-insight .callout-label { color: var(--accent); }
+    .callout-warning { border-left: 4px solid #F59E0B; background: var(--bg-callout-warn); }
+    .callout-warning .callout-label { color: #D97706; }
+    .callout-code { border-left: 4px solid #34D399; background: var(--bg-callout-code); }
+    .callout-code .callout-label { color: #059669; }
+    .callout-supply { border-left: 4px solid #10B981; background: var(--bg-callout-supply); }
+    .callout-supply .callout-label { color: #047857; }
+
+    .scenario-box { background: var(--bg-sidebar); color: var(--text-sidebar); border-radius: 10px; padding: 28px 32px; margin: 2rem 0; }
+    .scenario-box .scenario-label { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #34D399; margin-bottom: 12px; }
+    .scenario-box p { font-size: var(--text-sm); line-height: 1.75; color: #CBD5E1; margin-bottom: 0.8em; }
+    .scenario-box p:last-child { margin-bottom: 0; }
+    .scenario-box .mono { font-family: 'JetBrains Mono', monospace; color: #34D399; font-size: 12px; }
+
+    .data-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 2rem 0; }
+    .data-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+    .data-card .data-number { font-size: var(--text-3xl); font-weight: 900; letter-spacing: -0.03em; color: #047857; line-height: 1; margin-bottom: 6px; }
+    .data-card .data-label { font-size: var(--text-xs); color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
+
+    .property-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 2rem 0; }
+    .property-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .property-card .prop-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 18px; }
+    .property-card .prop-title { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .property-card .prop-desc { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.6; }
+
+    .table-wrapper { overflow-x: auto; margin: 1.8rem 0; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    thead tr { background: var(--bg-sidebar); color: var(--text-sidebar); }
+    thead th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: var(--text-xs); letter-spacing: 0.05em; text-transform: uppercase; }
+    tbody tr:nth-child(even) { background: #F8FAFC; }
+    tbody tr:nth-child(odd) { background: var(--bg-card); }
+    tbody td { padding: 12px 16px; color: var(--text-primary); line-height: 1.5; border-top: 1px solid var(--border); vertical-align: top; }
+
+    .code-block { margin: 1.6rem 0; border-radius: 10px; overflow: hidden; border: 1px solid #21262D; }
+    .code-header { background: #161B22; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .code-lang { font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: #8B949E; text-transform: uppercase; letter-spacing: 0.05em; }
+    .code-copy { background: none; border: 1px solid #30363D; border-radius: 4px; color: #8B949E; font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 3px 10px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .code-copy:hover { background: #21262D; color: #E2E8F0; }
+    .code-block pre { margin: 0; padding: 0; border-radius: 0; }
+    .code-block pre code { padding: 20px !important; font-size: 13.5px !important; line-height: 1.65 !important; font-family: 'JetBrains Mono', 'Fira Code', monospace !important; }
+
+    .diagram-section { margin: 2.5rem 0; }
+    .diagram-title { font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); text-align: center; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .diagram-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; overflow-x: auto; }
+    .diagram-container svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+    .diagram-caption { font-size: var(--text-xs); color: var(--text-secondary); text-align: center; margin-top: 12px; font-style: italic; }
+
+    .timescale-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 2rem 0; }
+    .timescale-card { border-radius: 10px; padding: 18px; border: 1px solid var(--border); }
+    .timescale-card .ts-horizon { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; }
+    .timescale-card .ts-agent { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .timescale-card .ts-example { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; }
+    .ts-realtime   { background: rgba(248,113,113,0.06); border-color: #F87171; }
+    .ts-realtime   .ts-horizon { color: #DC2626; }
+    .ts-hours      { background: rgba(251,146,60,0.06); border-color: #FB923C; }
+    .ts-hours      .ts-horizon { color: #EA580C; }
+    .ts-days       { background: rgba(251,191,36,0.06); border-color: #FBBF24; }
+    .ts-days       .ts-horizon { color: #D97706; }
+    .ts-weeks      { background: rgba(16,185,129,0.06); border-color: #10B981; }
+    .ts-weeks      .ts-horizon { color: #047857; }
+
+    .article-footer { max-width: 720px; margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--border); }
+    .author-bio-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px 28px; display: flex; gap: 20px; align-items: flex-start; }
+    .bio-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #A78BFA); display: flex; align-items: center; justify-content: center; font-size: var(--text-lg); font-weight: 700; color: white; flex-shrink: 0; }
+    .bio-name { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .bio-desc { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; }
+
+    /* Mobile */
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--bg-sidebar); align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .mobile-brand { font-size: var(--text-sm); font-weight: 700; color: var(--text-sidebar); }
+    .hamburger { background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-direction: column; gap: 5px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--text-sidebar); border-radius: 1px; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
+    @media (max-width: 767px) {
+      .mobile-header { display: flex; }
+      .layout { grid-template-columns: 1fr; padding-top: 56px; }
+      .sidebar { position: fixed; top: 56px; left: 0; height: calc(100vh - 56px); z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; width: var(--sidebar-width); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.visible { display: block; }
+      .article-wrapper { padding: 28px 20px 60px; }
+      .article-title { font-size: var(--text-3xl); }
+      .data-cards { grid-template-columns: 1fr; }
+      .property-grid { grid-template-columns: 1fr; }
+      .timescale-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 768px) and (max-width: 1024px) {
+      :root { --sidebar-width: 240px; }
+      .article-wrapper { padding: 48px 40px; }
+      .timescale-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="mobile-header">
+    <span class="mobile-brand">Neural Blueprints</span>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+  <div class="sidebar-overlay" id="overlay"></div>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="12 2 2 7 12 12 22 7 12 2"></polyline>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">Neural Blueprints</div>
+          <div class="brand-tagline">Sushant Joshi · AI Systems</div>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Agentic AI</div>
+        <a class="nav-item active" href="../blog-04/">
+          <span class="nav-item-number">04</span>
+          <span class="nav-item-title">Autonomous Supply Chain</span>
+        </a>
+        <a class="nav-item" href="../blog-03/">
+          <span class="nav-item-number">03</span>
+          <span class="nav-item-title">Drug Discovery at Machine Speed</span>
+        </a>
+        <a class="nav-item" href="../blog-02/">
+          <span class="nav-item-number">02</span>
+          <span class="nav-item-title">Autonomous Security Operations</span>
+        </a>
+        <a class="nav-item" href="../blog-01/">
+          <span class="nav-item-number">01</span>
+          <span class="nav-item-title">Autonomous Software Engineering</span>
+        </a>
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://github.com/sushant-joshi" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/susahntnpj" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </nav>
+
+    <!-- ARTICLE -->
+    <div class="article-wrapper">
+
+      <a class="back-link" href="../">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        All Essays
+      </a>
+
+      <header class="article-header">
+        <div class="article-meta-top">
+          <span class="post-number-badge">Essay 04</span>
+          <span class="tag tag-supply">Decentralized Agents</span>
+          <span class="tag tag-decentral">Multi-Timescale Planning</span>
+          <span class="tag tag-orch">Agent Negotiation</span>
+        </div>
+        <h1 class="article-title">The Supply Chain That Runs Itself: Designing a Distributed Agent Network for Global Logistics</h1>
+        <p class="article-subtitle">
+          The Suez Canal blockage cost $9.6B per day. COVID-19 emptied shelves for months. Both failures shared a root cause: centralized planning that could not react at the speed of disruption. This essay designs a federated agent network where every node acts autonomously — and the network self-heals faster than any human coordination chain could respond.
+        </p>
+        <div class="article-meta-bottom">
+          <div class="author-info">
+            <div class="author-avatar">SJ</div>
+            <div>
+              <div class="author-name">Sushant Joshi</div>
+              <div class="author-role">Principal Engineer · AI Systems</div>
+            </div>
+          </div>
+          <span class="meta-divider">·</span>
+          <span class="article-date-time">April 12, 2026 &nbsp;·&nbsp; 29 min read</span>
+        </div>
+      </header>
+
+      <div class="article-body">
+
+        <!-- S1: THE PROBLEM -->
+        <h2>Why the World's Most Complex Distributed System Is Still Run on Spreadsheets</h2>
+
+        <p class="lead">
+          The global supply chain is the most sophisticated distributed system humanity has ever built — a real-time network of 500,000 ships, 6 million trucks, 10,000 cargo aircraft, and trillions of dollars of inventory coordinated across 195 countries. And the decision-making layer on top of it runs on Excel, email, and weekly planning meetings that produce plans obsolete before the ink dries.
+        </p>
+
+        <p>
+          This is not a failure of ambition. It is a failure of architecture. Centralized planning systems cannot absorb real-time signals at the rate they are generated. A monsoon delays a port in Chennai. A factory fire halves a supplier's output. A rail strike in France ripples through six downstream distribution centers. By the time these signals travel up the reporting chain, are aggregated, debated, and translated into updated plans, the window for low-cost intervention has long closed. What remains are expensive last-resort options: air freight at 10x the cost, emergency supplier qualification, markdown sales to offload stranded inventory.
+        </p>
+
+        <div class="data-cards">
+          <div class="data-card">
+            <div class="data-number">$9.6B</div>
+            <div class="data-label">Per-day cost of the 2021 Suez Canal blockage to global trade (Lloyd's List)</div>
+          </div>
+          <div class="data-card">
+            <div class="data-number">73%</div>
+            <div class="data-label">Of supply chain leaders who experienced a significant disruption in 2025 (Gartner)</div>
+          </div>
+          <div class="data-card">
+            <div class="data-number">$1.5T</div>
+            <div class="data-label">Annual cost of excess inventory held globally as a disruption buffer (McKinsey, 2025)</div>
+          </div>
+        </div>
+
+        <p>
+          The $1.5 trillion in excess inventory is the most telling number. That is not waste — it is insurance. Companies hold safety stock because they do not trust their supply chains to respond quickly enough when things go wrong. The insurance premium for slow, centralized decision-making is $1.5 trillion per year, sitting in warehouses doing nothing.
+        </p>
+
+        <div class="pull-quote">
+          <p>"Excess inventory is not a supply chain problem. It is a decision latency problem. When decisions take days, you need weeks of buffer. When decisions take seconds, you can run lean."</p>
+        </div>
+
+        <p>
+          This essay designs the alternative: a federated network of autonomous agents where every node in the supply chain — every warehouse, every supplier relationship, every shipping lane — has a local agent capable of making decisions at the speed of events, sharing information with neighbors, and negotiating across boundaries to achieve globally coherent outcomes without waiting for central approval.
+        </p>
+
+        <!-- S2: USE CASE -->
+        <h2>The Use Case: A Global Retail Supply Chain</h2>
+
+        <p>
+          The target system is a global retail operation: 8,000 SKUs across 40 product categories, sourced from 300 suppliers across 18 countries, flowing through 12 regional distribution centers and 2,000 retail locations. Demand is seasonal and promotional, with spikes that can reach 10x baseline in 48 hours. The system must balance three competing objectives simultaneously: minimize stockouts (lost sales), minimize excess inventory (working capital), and minimize logistics cost (margin preservation).
+        </p>
+
+        <div class="scenario-box">
+          <div class="scenario-label">Disruption Response — A Typhoon in the South China Sea</div>
+          <p>
+            At 06:14 UTC, weather monitoring APIs register Typhoon Mawar making landfall near Kaohsiung, Taiwan. Three of the company's key electronics component suppliers are in the affected zone. Port Kaohsiung — responsible for 23% of inbound container volume — is closing for 5–8 days.
+          </p>
+          <p>
+            By 06:17, the Disruption Response Agent has mapped the exposure: <span class="mono">14 SKUs at risk · 3 DCs directly affected · $8.4M GMV at risk over 21-day horizon</span>. It has already dispatched impact queries to each affected Inventory Agent. Within 90 seconds, it has a full network picture.
+          </p>
+          <p>
+            By 06:22, the Procurement Agent has initiated rerouting negotiations with two alternative carriers via Maersk and MSC APIs, and has queried three Taiwan-alternative suppliers in Vietnam and Malaysia for available capacity. The Logistics Agent has begun identifying vessels already at sea that could be diverted to Port of Keelung as an alternative entry point.
+          </p>
+          <p>
+            By 06:45, the system has a coordinated response: 8 of the 14 SKUs have alternative sourcing or rerouting locked in. The remaining 6 are escalated to human procurement leads with a structured brief — alternative options ranked by cost and lead time, confidence scores, and recommended actions. The on-call supply chain manager arrives to work at 09:00 to a contained situation, not a crisis.
+          </p>
+          <p>
+            No spreadsheet was opened. No planning meeting was called. The network responded at the speed of the disruption.
+          </p>
+        </div>
+
+        <!-- S3: WHY AGENTIC AI FITS -->
+        <h2>Why Supply Chains Demand a Decentralized Agent Architecture</h2>
+
+        <p>
+          Supply chain management has three structural properties that not only suit agentic AI — they <em>demand</em> it. Specifically, they demand a <em>decentralized</em> agentic architecture, distinct from the centrally-orchestrated systems in the previous essays.
+        </p>
+
+        <div class="property-grid">
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(16,185,129,0.1);">🌐</div>
+            <div class="prop-title">Geographic Impossibility of Centralization</div>
+            <div class="prop-desc">A supply chain spanning 18 countries generates events at all hours, in all time zones, in dozens of languages and data formats. A central planner would need to process millions of signals per day. Any architecture that requires all signals to flow through one point creates a bottleneck that defeats the purpose.</div>
+          </div>
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(99,102,241,0.1);">⏱</div>
+            <div class="prop-title">Latency Kills Value at Every Level</div>
+            <div class="prop-desc">Different supply chain decisions have different latency requirements: rerouting a truck is a minutes-level decision; adjusting a reorder point is a hours-level decision; renegotiating a supplier contract is a weeks-level decision. No single central system can optimize across all timescales simultaneously without sacrificing response speed at the fastest level.</div>
+          </div>
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(251,191,36,0.1);">🔄</div>
+            <div class="prop-title">The Bullwhip Effect Is an Information Problem</div>
+            <div class="prop-desc">The bullwhip effect — where small demand fluctuations amplify into massive inventory swings upstream — is caused by information delay and local optimization without global visibility. Agents that share demand signals laterally and reason about network-wide consequences eliminate the root cause rather than treating the symptom with safety stock.</div>
+          </div>
+        </div>
+
+        <div class="callout callout-supply">
+          <div class="callout-label">The Key Architectural Insight</div>
+          <p>Previous essays in this series used a central orchestrator to coordinate agents. Supply chain breaks that pattern. The right model is <strong>federated coordination</strong>: agents at each node have local decision authority, share signals with neighbors via a lightweight protocol, and escalate to a planning layer only for decisions that exceed their local scope. This mirrors how resilient biological and social systems work — local action, global coherence.</p>
+        </div>
+
+        <!-- S4: ARCHITECTURE -->
+        <h2>System Architecture: A Federated Agent Network</h2>
+
+        <p>
+          The architecture is organized as five agent types arranged in a network topology that mirrors the physical supply chain structure. Unlike previous essays where agents form a vertical hierarchy, here agents form a <strong>lateral mesh</strong> — each node communicating with its direct neighbors (suppliers upstream, distribution centers downstream, logistics partners laterally) rather than routing everything through a center.
+        </p>
+
+        <div class="diagram-section">
+          <div class="diagram-title">Autonomous Supply Chain — Federated Agent Network Architecture</div>
+          <div class="diagram-container">
+            <svg viewBox="0 0 860 740" xmlns="http://www.w3.org/2000/svg" font-family="Inter, -apple-system, sans-serif">
+              <defs>
+                <marker id="arr-s" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#64748B"/></marker>
+                <marker id="arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#10B981"/></marker>
+                <marker id="arr-bi" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#94A3B8"/></marker>
+              </defs>
+
+              <!-- TIER 1: SIGNALS -->
+              <rect x="20" y="18" width="820" height="80" rx="10" fill="rgba(96,165,250,0.07)" stroke="#60A5FA" stroke-width="1.5"/>
+              <text x="36" y="38" font-size="9" font-weight="700" fill="#2563EB" letter-spacing="1.5">SIGNAL INGESTION — REAL-TIME FEEDS</text>
+              <rect x="44"  y="46" width="130" height="38" rx="6" fill="white" stroke="#60A5FA" stroke-width="1.5"/>
+              <text x="109" y="70" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">POS / Demand</text>
+              <rect x="188" y="46" width="130" height="38" rx="6" fill="white" stroke="#60A5FA" stroke-width="1.5"/>
+              <text x="253" y="70" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">IoT / Sensor</text>
+              <rect x="332" y="46" width="130" height="38" rx="6" fill="white" stroke="#60A5FA" stroke-width="1.5"/>
+              <text x="397" y="70" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">Weather / Events</text>
+              <rect x="476" y="46" width="130" height="38" rx="6" fill="white" stroke="#60A5FA" stroke-width="1.5"/>
+              <text x="541" y="70" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">Port / Carrier APIs</text>
+              <rect x="620" y="46" width="160" height="38" rx="6" fill="white" stroke="#60A5FA" stroke-width="1.5"/>
+              <text x="700" y="70" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">ERP / WMS / TMS</text>
+
+              <!-- TIER 2: DEMAND SENSING -->
+              <rect x="20" y="122" width="820" height="70" rx="10" fill="rgba(167,139,250,0.07)" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="36" y="142" font-size="9" font-weight="700" fill="#7C3AED" letter-spacing="1.5">DEMAND SENSING LAYER</text>
+              <rect x="50" y="150" width="220" height="34" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="160" y="172" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Demand Sensing Agent</text>
+              <rect x="290" y="150" width="220" height="34" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="400" y="172" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Forecast Model (ML)</text>
+              <rect x="530" y="150" width="220" height="34" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="640" y="172" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Anomaly Detector</text>
+
+              <!-- TIER 3: AGENT MESH (the key layer) -->
+              <rect x="20" y="216" width="820" height="220" rx="10" fill="rgba(16,185,129,0.06)" stroke="#10B981" stroke-width="2"/>
+              <text x="36" y="236" font-size="9" font-weight="700" fill="#047857" letter-spacing="1.5">FEDERATED AGENT MESH — LOCAL AUTHORITY + LATERAL COORDINATION</text>
+
+              <!-- Supplier Agents (left column) -->
+              <rect x="36" y="248" width="140" height="52" rx="6" fill="white" stroke="#10B981" stroke-width="1.5"/>
+              <text x="106" y="268" font-size="11" text-anchor="middle">🏭</text>
+              <text x="106" y="289" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Supplier Agent ×N</text>
+
+              <!-- Procurement Agent -->
+              <rect x="36" y="318" width="140" height="52" rx="6" fill="white" stroke="#10B981" stroke-width="1.5"/>
+              <text x="106" y="338" font-size="11" text-anchor="middle">📋</text>
+              <text x="106" y="359" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Procurement Agent</text>
+
+              <!-- Inventory Agents (center) -->
+              <rect x="220" y="248" width="168" height="52" rx="6" fill="white" stroke="#10B981" stroke-width="2"/>
+              <text x="304" y="268" font-size="11" text-anchor="middle">📦</text>
+              <text x="304" y="286" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Inventory Agent</text>
+              <text x="304" y="298" font-size="8.5" fill="#4A5568" text-anchor="middle">×12 (one per DC)</text>
+
+              <!-- Logistics Agent (center-right) -->
+              <rect x="410" y="248" width="168" height="52" rx="6" fill="white" stroke="#10B981" stroke-width="1.5"/>
+              <text x="494" y="268" font-size="11" text-anchor="middle">🚚</text>
+              <text x="494" y="286" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Logistics Agent</text>
+              <text x="494" y="298" font-size="8.5" fill="#4A5568" text-anchor="middle">Route + carrier opt.</text>
+
+              <!-- Store/Demand Agents (right) -->
+              <rect x="598" y="248" width="168" height="52" rx="6" fill="white" stroke="#10B981" stroke-width="1.5"/>
+              <text x="682" y="268" font-size="11" text-anchor="middle">🏪</text>
+              <text x="682" y="286" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Demand Agent</text>
+              <text x="682" y="298" font-size="8.5" fill="#4A5568" text-anchor="middle">×2,000 stores</text>
+
+              <!-- Disruption Response Agent (bottom center, spans full width conceptually) -->
+              <rect x="220" y="318" width="546" height="52" rx="6" fill="white" stroke="#F87171" stroke-width="1.5"/>
+              <text x="493" y="338" font-size="11" text-anchor="middle">⚡</text>
+              <text x="493" y="356" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Disruption Response Agent — cross-network incident coordinator</text>
+
+              <!-- Lateral coordination arrows between agents -->
+              <line x1="178" y1="274" x2="218" y2="274" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
+              <line x1="390" y1="274" x2="408" y2="274" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
+              <line x1="580" y1="274" x2="596" y2="274" stroke="#10B981" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-g)"/>
+              <!-- Inventory ↔ Disruption -->
+              <line x1="304" y1="302" x2="304" y2="316" stroke="#F87171" stroke-width="1" stroke-dasharray="3 3"/>
+              <!-- Logistics ↔ Disruption -->
+              <line x1="494" y1="302" x2="494" y2="316" stroke="#F87171" stroke-width="1" stroke-dasharray="3 3"/>
+
+              <!-- TIER 4: PLANNING LAYER -->
+              <rect x="20" y="460" width="820" height="80" rx="10" fill="rgba(251,191,36,0.07)" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="36" y="480" font-size="9" font-weight="700" fill="#D97706" letter-spacing="1.5">PLANNING LAYER — MEDIUM &amp; LONG HORIZON</text>
+              <rect x="46" y="488" width="200" height="38" rx="6" fill="white" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="146" y="512" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Network Planner Agent</text>
+              <rect x="264" y="488" width="200" height="38" rx="6" fill="white" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="364" y="512" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Supplier Strategy Agent</text>
+              <rect x="482" y="488" width="200" height="38" rx="6" fill="white" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="582" y="512" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Capacity Planning Agent</text>
+              <rect x="700" y="488" width="120" height="38" rx="6" fill="white" stroke="#FBBF24" stroke-width="1.5"/>
+              <text x="760" y="512" font-size="10.5" font-weight="600" fill="#0F1117" text-anchor="middle">Human Escalation</text>
+
+              <!-- TIER 5: SHARED KNOWLEDGE -->
+              <rect x="20" y="564" width="820" height="74" rx="10" fill="rgba(167,139,250,0.07)" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="36" y="584" font-size="9" font-weight="700" fill="#7C3AED" letter-spacing="1.5">SHARED KNOWLEDGE &amp; STATE LAYER</text>
+              <rect x="44"  y="592" width="176" height="34" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="132" y="614" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">Network State Graph</text>
+              <rect x="236" y="592" width="176" height="34" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="324" y="614" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">Demand Signal Store</text>
+              <rect x="428" y="592" width="176" height="34" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="516" y="614" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">Disruption History</text>
+              <rect x="620" y="592" width="196" height="34" rx="6" fill="white" stroke="#A78BFA" stroke-width="1.5"/>
+              <text x="718" y="614" font-size="10" font-weight="600" fill="#0F1117" text-anchor="middle">Contract &amp; SLA Registry</text>
+
+              <!-- TIER 6: INFRA -->
+              <rect x="20" y="660" width="820" height="64" rx="10" fill="rgba(148,163,184,0.07)" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="36" y="680" font-size="9" font-weight="700" fill="#64748B" letter-spacing="1.5">INFRASTRUCTURE</text>
+              <rect x="44"  y="686" width="172" height="30" rx="6" fill="white" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="130" y="706" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Message Broker (Kafka)</text>
+              <rect x="232" y="686" width="172" height="30" rx="6" fill="white" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="318" y="706" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">LLM API</text>
+              <rect x="420" y="686" width="172" height="30" rx="6" fill="white" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="506" y="706" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Time-Series DB</text>
+              <rect x="608" y="686" width="216" height="30" rx="6" fill="white" stroke="#94A3B8" stroke-width="1.5"/>
+              <text x="716" y="706" font-size="9.5" font-weight="600" fill="#0F1117" text-anchor="middle">Audit &amp; Observability</text>
+
+              <!-- Inter-tier arrows -->
+              <line x1="430" y1="98" x2="430" y2="120" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr-s)"/>
+              <line x1="430" y1="192" x2="430" y2="214" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr-s)"/>
+              <!-- Mesh → Planning (escalation) -->
+              <line x1="430" y1="438" x2="430" y2="458" stroke="#64748B" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arr-s)"/>
+              <!-- Planning → Shared Knowledge -->
+              <line x1="430" y1="540" x2="430" y2="562" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr-s)"/>
+              <!-- Shared Knowledge → Infra -->
+              <line x1="430" y1="638" x2="430" y2="658" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr-s)"/>
+            </svg>
+          </div>
+          <p class="diagram-caption">Figure 1: Federated Agent Network for supply chain management. The Agent Mesh (green) is the core: agents operate with local authority and communicate laterally with neighbors. The Planning Layer handles only medium and long-horizon decisions that exceed individual agents' local scope.</p>
+        </div>
+
+        <!-- S5: DEEP DIVE 1 — DECENTRALIZED COORDINATION -->
+        <h2>Deep Dive I: Decentralized Coordination Without a Central Planner</h2>
+
+        <p>
+          Every prior essay in this series has featured a central orchestrator — an agent or layer that receives the full problem, decomposes it, and assigns work. The autonomous SOC has a Multi-Agent Coordinator. The drug discovery platform has a Portfolio Manager. This design is appropriate when one entity can have complete enough information to plan well.
+        </p>
+
+        <p>
+          Supply chains break that assumption. No central planner can have real-time visibility into the operational state of 2,000 stores, 300 suppliers, and 12 distribution centers simultaneously. Attempting to centralize creates exactly the information delay and bottleneck that causes the brittleness we are trying to solve. The right model is borrowed from economics: <strong>market-based coordination</strong>, where agents make locally rational decisions informed by shared price signals, producing globally coherent outcomes without any single entity optimizing the whole.
+        </p>
+
+        <h3>The Inventory Agent: Local Decision Authority</h3>
+
+        <p>
+          Each of the 12 distribution centers has its own Inventory Agent. This agent has full authority over inventory decisions within its DC — replenishment triggers, safety stock levels, allocation rules when supply is short — without needing approval from any central system. Its decisions are bounded by policy constraints (maximum inventory investment, service level commitments to stores) but within those bounds, it acts autonomously and immediately.
+        </p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Python</span>
+            <button class="code-copy" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code class="language-python">from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Optional
+import asyncio
+
+@dataclass
+class InventoryPosition:
+    sku_id: str
+    dc_id: str
+    on_hand_units: int
+    on_order_units: int          # Units in transit from supplier
+    days_of_supply: float        # on_hand / avg_daily_demand
+    reorder_point: int           # Trigger replenishment when on_hand falls here
+    safety_stock: int            # Minimum buffer maintained
+    max_stock: int               # Capacity constraint
+
+@dataclass
+class ReplenishmentRequest:
+    request_id: str
+    sku_id: str
+    from_dc: str
+    to_dc: Optional[str]         # None = order from supplier
+    quantity: int
+    priority: str                # "routine", "urgent", "emergency"
+    reason: str
+    requested_at: datetime = field(default_factory=datetime.utcnow)
+
+class InventoryAgent:
+    """
+    Autonomous inventory manager for a single distribution center.
+    Makes local decisions; shares demand signals laterally with peer DCs;
+    escalates to Planning Layer only when decisions exceed local scope.
+    """
+    def __init__(
+        self,
+        dc_id: str,
+        peer_dc_ids: list[str],
+        message_bus,             # Kafka producer for lateral communication
+        procurement_agent,       # Local reference for direct negotiation
+        planning_escalation_fn,  # Callable for out-of-scope decisions
+    ):
+        self.dc_id = dc_id
+        self.peers = peer_dc_ids
+        self.bus = message_bus
+        self.procurement = procurement_agent
+        self.escalate = planning_escalation_fn
+        self.positions: dict[str, InventoryPosition] = {}
+
+    async def on_demand_signal(self, sku_id: str, demand_delta: float, signal_source: str):
+        """
+        Called when demand sensing layer emits an updated demand signal.
+        Evaluates whether current position is still adequate and acts.
+        """
+        pos = self.positions.get(sku_id)
+        if not pos:
+            return
+
+        # Recompute days of supply with updated demand
+        new_dos = pos.on_hand_units / max(demand_delta, 0.1)
+        pos.days_of_supply = new_dos
+
+        if new_dos < 3.0 and pos.on_hand_units <= pos.reorder_point:
+            await self._trigger_replenishment(pos, urgency="urgent")
+        elif new_dos < 1.0:
+            # Critical — check peer DCs for lateral transfer before going to supplier
+            await self._request_lateral_transfer(pos)
+        elif new_dos < 7.0 and pos.on_hand_units <= pos.reorder_point:
+            await self._trigger_replenishment(pos, urgency="routine")
+
+        # Always broadcast updated demand signal to peer DCs
+        # (this is the gossip mechanism that fights the bullwhip effect)
+        await self._broadcast_demand_signal(sku_id, demand_delta)
+
+    async def _trigger_replenishment(self, pos: InventoryPosition, urgency: str):
+        """
+        Negotiate replenishment quantity and timing with the Procurement Agent.
+        This is a direct agent-to-agent negotiation, not a central approval process.
+        """
+        # Compute target replenishment quantity
+        target_qty = pos.max_stock - pos.on_hand_units - pos.on_order_units
+
+        if target_qty <= 0:
+            return  # Already have sufficient on-order
+
+        request = ReplenishmentRequest(
+            request_id=f"{self.dc_id}-{pos.sku_id}-{int(datetime.utcnow().timestamp())}",
+            sku_id=pos.sku_id,
+            from_dc=self.dc_id,
+            to_dc=None,
+            quantity=target_qty,
+            priority=urgency,
+            reason=f"Days of supply {pos.days_of_supply:.1f} below threshold at {self.dc_id}",
+        )
+
+        # Negotiate directly with Procurement Agent
+        result = await self.procurement.negotiate_replenishment(request)
+
+        if result.status == "confirmed":
+            pos.on_order_units += result.confirmed_quantity
+        elif result.status == "partial":
+            pos.on_order_units += result.confirmed_quantity
+            # Escalate remainder to Planning Layer for supplier strategy
+            await self.escalate(
+                issue=f"Supplier capacity insufficient for full replenishment of {pos.sku_id}",
+                shortfall=target_qty - result.confirmed_quantity,
+                context={"dc": self.dc_id, "urgency": urgency},
+            )
+
+    async def _request_lateral_transfer(self, pos: InventoryPosition):
+        """
+        When critically low, query peer DCs for available stock to transfer.
+        This is lateral coordination — no central planner involved.
+        """
+        transfer_query = {
+            "type": "lateral_transfer_query",
+            "sku_id": pos.sku_id,
+            "requesting_dc": self.dc_id,
+            "quantity_needed": pos.reorder_point - pos.on_hand_units,
+            "urgency": "emergency",
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+        # Publish to the shared bus — peer DCs subscribe and respond if they have surplus
+        await self.bus.publish(topic=f"dc.{self.dc_id}.lateral_query", message=transfer_query)
+
+    async def _broadcast_demand_signal(self, sku_id: str, demand_delta: float):
+        """
+        Gossip updated demand signal to all peer DCs.
+        This is the key mechanism that prevents the bullwhip effect:
+        real demand signals propagate laterally rather than getting
+        amplified as they travel up a reporting chain.
+        """
+        signal = {
+            "type": "demand_signal",
+            "sku_id": sku_id,
+            "source_dc": self.dc_id,
+            "demand_delta": demand_delta,
+            "timestamp": datetime.utcnow().isoformat(),
+            "hops": 1,   # Limit gossip propagation depth
+        }
+        for peer_dc in self.peers:
+            await self.bus.publish(topic=f"dc.{peer_dc}.demand_signal", message=signal)
+
+    async def on_lateral_transfer_query(self, query: dict):
+        """
+        Respond to peer DC transfer requests if we have surplus stock.
+        Agents negotiate directly — no human or central system needed.
+        """
+        sku_id = query["sku_id"]
+        pos = self.positions.get(sku_id)
+        if not pos:
+            return
+
+        # Only offer stock if we have more than our own safety buffer
+        available_to_transfer = max(0, pos.on_hand_units - pos.safety_stock - pos.reorder_point)
+
+        if available_to_transfer >= query["quantity_needed"]:
+            offer_qty = query["quantity_needed"]
+        elif available_to_transfer > 0:
+            offer_qty = available_to_transfer
+        else:
+            return  # Nothing to offer
+
+        offer = {
+            "type": "lateral_transfer_offer",
+            "sku_id": sku_id,
+            "offering_dc": self.dc_id,
+            "requesting_dc": query["requesting_dc"],
+            "quantity_offered": offer_qty,
+            "estimated_transit_days": self._estimate_transit(query["requesting_dc"]),
+        }
+        await self.bus.publish(
+            topic=f"dc.{query['requesting_dc']}.transfer_offer",
+            message=offer,
+        )
+        # Reserve the offered quantity immediately to prevent double-offer
+        pos.on_hand_units -= offer_qty
+
+    def _estimate_transit(self, dest_dc: str) -> int:
+        """Simplified transit time lookup — in production, query logistics network graph."""
+        transit_map = {"DC-WEST": 2, "DC-EAST": 3, "DC-SOUTH": 2, "DC-NORTH": 3}
+        return transit_map.get(dest_dc, 4)
+</code></pre>
+        </div>
+
+        <div class="callout callout-insight">
+          <div class="callout-label">Why Gossip Beats Reporting</div>
+          <p>The <code>_broadcast_demand_signal</code> method is the most important function in the Inventory Agent. Traditional supply chains pass demand information <em>upward</em> through a reporting hierarchy — store to DC, DC to regional planner, planner to central forecast team, then back down as replenishment orders. Each hop introduces a delay and an amplification (managers order a little extra "just in case"). The gossip mechanism sends demand signals <em>laterally</em> to peer DCs in real time, so every node in the network is working from the same live demand picture. The bullwhip effect requires information asymmetry to exist. Gossip eliminates it.</p>
+        </div>
+
+        <!-- S6: DEEP DIVE 2 — MULTI-TIMESCALE PLANNING -->
+        <h2>Deep Dive II: Multi-Timescale Decision Horizons</h2>
+
+        <p>
+          One of the most distinctive challenges in supply chain AI is that the same network must make good decisions at four radically different timescales simultaneously. A rerouting decision for a stuck truck needs to be made in minutes. A safety stock recalibration needs to be done in hours. A supplier reorder policy update runs weekly. A network capacity restructuring runs quarterly. No single planning model can be optimal across all four.
+        </p>
+
+        <div class="timescale-grid">
+          <div class="timescale-card ts-realtime">
+            <div class="ts-horizon">Seconds — Minutes</div>
+            <div class="ts-agent">Logistics Agent</div>
+            <div class="ts-example">Reroute truck around road closure. Select alternate carrier for delayed shipment. Update ETA predictions across downstream nodes.</div>
+          </div>
+          <div class="timescale-card ts-hours">
+            <div class="ts-horizon">Hours — Days</div>
+            <div class="ts-agent">Inventory Agent</div>
+            <div class="ts-example">Trigger emergency replenishment. Initiate lateral DC transfer. Adjust store allocation ratios when supply is short.</div>
+          </div>
+          <div class="timescale-card ts-days">
+            <div class="ts-horizon">Days — Weeks</div>
+            <div class="ts-agent">Disruption Response Agent</div>
+            <div class="ts-example">Qualify alternative suppliers. Adjust safety stock levels post-disruption. Negotiate spot contracts for expedited capacity.</div>
+          </div>
+          <div class="timescale-card ts-weeks">
+            <div class="ts-horizon">Weeks — Months</div>
+            <div class="ts-agent">Planning + Supplier Strategy</div>
+            <div class="ts-example">Renegotiate supplier contracts. Restructure DC network for new demand patterns. Adjust landed-cost model for tariff changes.</div>
+          </div>
+        </div>
+
+        <p>
+          The architecture handles this through <strong>temporal separation of agent responsibilities</strong>: each agent type owns exactly one planning horizon and is not expected to reason about others. The Disruption Response Agent does not think in weeks — it thinks in days, handing off longer-horizon implications to the Planning Layer agents with a structured brief.
+        </p>
+
+        <h3>The Disruption Response Agent: Cross-Network Incident Commander</h3>
+
+        <p>
+          The Disruption Response Agent is the one agent in the network that must think across multiple DCs simultaneously. When a disruption event arrives — a port closure, a supplier factory fire, a sudden demand spike driven by a viral social media moment — the Response Agent has three responsibilities in sequence: <strong>assess</strong> (what is the network-wide exposure?), <strong>contain</strong> (what actions within existing options can mitigate the immediate impact?), and <strong>plan</strong> (what structural changes are needed if this disruption persists beyond the immediate horizon?).
+        </p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Python</span>
+            <button class="code-copy" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><code class="language-python">from dataclasses import dataclass, field
+from typing import Callable
+from datetime import datetime, timedelta
+from enum import Enum
+
+class DisruptionType(Enum):
+    PORT_CLOSURE          = "port_closure"
+    SUPPLIER_FAILURE      = "supplier_failure"
+    WEATHER_EVENT         = "weather_event"
+    DEMAND_SPIKE          = "demand_spike"
+    CARRIER_STRIKE        = "carrier_strike"
+    CUSTOMS_DELAY         = "customs_delay"
+
+@dataclass
+class DisruptionEvent:
+    event_id: str
+    disruption_type: DisruptionType
+    affected_nodes: list[str]        # Port IDs, supplier IDs, DC IDs
+    estimated_duration_days: int
+    severity: str                    # "minor", "moderate", "severe", "critical"
+    detected_at: datetime
+    raw_signal: dict                 # Original event payload
+
+@dataclass
+class ImpactAssessment:
+    event_id: str
+    skus_at_risk: list[str]
+    dcs_affected: list[str]
+    gmv_at_risk_usd: float
+    days_of_supply_reduction: dict[str, float]   # sku_id → days lost
+    mitigation_options: list[dict]
+    escalation_required: bool
+    assessed_at: datetime = field(default_factory=datetime.utcnow)
+
+class DisruptionResponseAgent:
+    """
+    Cross-network disruption coordinator.
+    Assesses exposure, coordinates containment across peer agents,
+    and escalates structural issues to the Planning Layer.
+    """
+    def __init__(
+        self,
+        network_state_graph,      # Live graph of the supply network topology
+        inventory_agents: dict,   # dc_id → InventoryAgent
+        procurement_agent,
+        logistics_agent,
+        planning_escalation_fn: Callable,
+        notify_fn: Callable,
+    ):
+        self.network = network_state_graph
+        self.inventory_agents = inventory_agents
+        self.procurement = procurement_agent
+        self.logistics = logistics_agent
+        self.escalate = planning_escalation_fn
+        self.notify = notify_fn
+
+    async def handle_disruption(self, event: DisruptionEvent) -> ImpactAssessment:
+        """
+        Three-phase response: assess → contain → plan.
+        """
+        # ---- PHASE 1: ASSESS ----
+        assessment = await self._assess_exposure(event)
+
+        # Notify on-call team immediately with assessment
+        await self.notify(
+            subject=f"[{event.severity.upper()}] Disruption: {event.disruption_type.value}",
+            body=assessment,
+            priority="high" if event.severity in ("severe", "critical") else "normal",
+        )
+
+        # ---- PHASE 2: CONTAIN ----
+        contained_skus = []
+        for option in assessment.mitigation_options:
+            success = await self._execute_mitigation(option, event)
+            if success:
+                contained_skus.extend(option.get("skus_resolved", []))
+
+        # ---- PHASE 3: PLAN ----
+        unresolved_skus = [s for s in assessment.skus_at_risk if s not in contained_skus]
+
+        if unresolved_skus or event.estimated_duration_days > 7:
+            await self.escalate(
+                issue=f"Disruption {event.event_id}: {len(unresolved_skus)} SKUs unresolved",
+                context={
+                    "event": event,
+                    "assessment": assessment,
+                    "unresolved_skus": unresolved_skus,
+                    "requires": ["alternative_sourcing", "safety_stock_review"]
+                    if event.estimated_duration_days > 7
+                    else ["spot_procurement"],
+                },
+            )
+
+        return assessment
+
+    async def _assess_exposure(self, event: DisruptionEvent) -> ImpactAssessment:
+        """
+        Query all Inventory Agents for SKUs flowing through the affected nodes,
+        compute exposure, and rank mitigation options by feasibility.
+        """
+        skus_at_risk = []
+        dcs_affected = []
+        gmv_at_risk = 0.0
+        dos_reduction = {}
+        mitigation_options = []
+
+        # Query network graph for affected flows
+        affected_flows = self.network.get_flows_through(event.affected_nodes)
+
+        for flow in affected_flows:
+            sku_id = flow["sku_id"]
+            dc_id = flow["destination_dc"]
+            daily_gmv = flow["daily_gmv_usd"]
+
+            skus_at_risk.append(sku_id)
+            dcs_affected.append(dc_id)
+            gmv_at_risk += daily_gmv * event.estimated_duration_days
+            dos_reduction[sku_id] = event.estimated_duration_days
+
+            # Check mitigation options for this flow
+            alt_routes = await self.logistics.find_alternate_routes(
+                origin=flow["origin_node"],
+                destination=dc_id,
+                sku_id=sku_id,
+                exclude_nodes=event.affected_nodes,
+            )
+
+            alt_suppliers = await self.procurement.query_alternate_suppliers(
+                sku_id=sku_id,
+                quantity_needed=flow["weekly_volume"],
+                lead_time_days=event.estimated_duration_days,
+            )
+
+            if alt_routes:
+                mitigation_options.append({
+                    "type": "reroute",
+                    "sku_id": sku_id,
+                    "option": alt_routes[0],
+                    "cost_premium_pct": alt_routes[0].get("cost_premium_pct", 0),
+                    "skus_resolved": [sku_id],
+                })
+            elif alt_suppliers:
+                mitigation_options.append({
+                    "type": "alternate_supplier",
+                    "sku_id": sku_id,
+                    "option": alt_suppliers[0],
+                    "cost_premium_pct": alt_suppliers[0].get("cost_premium_pct", 0),
+                    "skus_resolved": [sku_id],
+                })
+
+        # Sort mitigations by cost premium ascending
+        mitigation_options.sort(key=lambda x: x.get("cost_premium_pct", 999))
+
+        return ImpactAssessment(
+            event_id=event.event_id,
+            skus_at_risk=list(set(skus_at_risk)),
+            dcs_affected=list(set(dcs_affected)),
+            gmv_at_risk_usd=gmv_at_risk,
+            days_of_supply_reduction=dos_reduction,
+            mitigation_options=mitigation_options,
+            escalation_required=event.estimated_duration_days > 5 or len(skus_at_risk) > 20,
+        )
+
+    async def _execute_mitigation(self, option: dict, event: DisruptionEvent) -> bool:
+        """
+        Execute a mitigation option within the agent's autonomous authority.
+        Rerouting and spot procurement are within scope; structural changes escalate.
+        """
+        match option["type"]:
+            case "reroute":
+                return await self.logistics.execute_reroute(
+                    option["option"], trace_id=event.event_id
+                )
+            case "alternate_supplier":
+                if option["cost_premium_pct"] <= 15:
+                    # Within autonomous authority: up to 15% cost premium
+                    return await self.procurement.activate_alternate_supplier(
+                        option["option"], trace_id=event.event_id
+                    )
+                else:
+                    # Exceeds autonomous authority — requires human approval
+                    await self.notify(
+                        subject=f"Approval needed: {option['cost_premium_pct']}% cost premium for {option['sku_id']}",
+                        body=option,
+                        priority="high",
+                    )
+                    return False
+            case _:
+                return False
+</code></pre>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-label">Autonomous Authority Must Have Explicit Boundaries</div>
+          <p>The 15% cost premium threshold in <code>_execute_mitigation</code> is not arbitrary — it is a deliberate policy choice that encodes where autonomous authority ends and human judgment begins. Too low and the agent escalates everything, defeating the purpose. Too high and the agent makes commitments that undermine the procurement team's long-term supplier relationships. This threshold should be set collaboratively between engineering and supply chain leadership, reviewed quarterly against actual incident outcomes, and encoded as a policy parameter (not a magic number in code).</p>
+        </div>
+
+        <!-- S7: TRADEOFFS -->
+        <h2>Tradeoffs and Design Decisions</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Decision</th>
+                <th>Choice Made</th>
+                <th>Alternative</th>
+                <th>Rationale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Coordination model</strong></td>
+                <td>Federated mesh with gossip</td>
+                <td>Central orchestrator</td>
+                <td>Central orchestrators create a single point of failure and a bottleneck that grows with network size. Gossip-based lateral coordination scales linearly with network size and remains resilient when individual nodes fail.</td>
+              </tr>
+              <tr>
+                <td><strong>Demand signal propagation</strong></td>
+                <td>Gossip (DC to DC, depth-limited)</td>
+                <td>Central demand broadcast</td>
+                <td>Central broadcast creates dependency on broadcast system availability. Gossip is resilient to partial failures — if two DCs are partitioned from the central system but connected to each other, demand signals still propagate.</td>
+              </tr>
+              <tr>
+                <td><strong>Autonomous action scope</strong></td>
+                <td>Policy-bounded by cost premium threshold and quantity limits</td>
+                <td>Full autonomy or approval-only</td>
+                <td>Full autonomy leads to unpredictable procurement spend. Approval-only defeats the speed benefit. Policy-bounded autonomy captures 90% of response value with bounded financial exposure — the same insight as the blast radius framework in Essay 02, applied to commercial risk.</td>
+              </tr>
+              <tr>
+                <td><strong>Bullwhip mitigation</strong></td>
+                <td>Real-time lateral demand sharing + local safety stock optimization</td>
+                <td>Increased safety stock buffers</td>
+                <td>More safety stock is expensive (the $1.5T annual cost cited in the opening) and becomes obsolete. Real-time demand sharing attacks the root cause: information asymmetry and delay. Better information reduces required safety stock — the virtuous loop.</td>
+              </tr>
+              <tr>
+                <td><strong>Planning layer separation</strong></td>
+                <td>Strict timescale separation: mesh handles ≤7 days, planning layer handles longer</td>
+                <td>Unified planning model</td>
+                <td>Unified models optimize for their average case and perform poorly at both extremes. A model trained to think in weeks responds too slowly to minute-level disruptions. Temporal separation allows each layer to be independently optimized and independently updated.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- S8: PRODUCTION -->
+        <h2>Production Considerations</h2>
+
+        <h3>Agent Consistency Under Network Partition</h3>
+
+        <p>
+          In a distributed agent mesh, network partitions are not hypothetical — they happen routinely. A DC's connectivity to the message bus may degrade. An IoT gateway may go offline for hours. The design must be partition-tolerant: each agent must be able to continue making locally reasonable decisions without connectivity to its peers, then reconcile state when connectivity restores. The Inventory Agent's <code>reorder_point</code> and <code>safety_stock</code> parameters should be calibrated to absorb the expected maximum partition duration without requiring external coordination. Think of these parameters as the agent's "offline survival kit."
+        </p>
+
+        <h3>Avoiding Coordination Spirals</h3>
+
+        <p>
+          A risk unique to multi-agent systems with lateral communication is the <strong>coordination spiral</strong>: agent A sees a demand spike and broadcasts it to agent B; agent B, observing the same spike plus the broadcast from A, concludes demand is higher than it is and broadcasts a further-amplified signal. This is the agent-era version of the bullwhip effect. The depth-limited gossip (<code>"hops": 1</code> in the broadcast payload) prevents amplification: agents only propagate signals they received directly, not signals received from peers. This preserves the speed benefit of lateral sharing while eliminating the feedback loop risk.
+        </p>
+
+        <h3>Observability in a Decentralized System</h3>
+
+        <p>
+          Debugging a centralized system is hard. Debugging a decentralized mesh where 12 DCs, 300 supplier agents, and a disruption response agent are all making autonomous decisions simultaneously is harder. The mandatory investment is a <strong>centralized audit log</strong> — even though the decision-making is decentralized, every agent action must be logged to a single, queryable store with a <code>trace_id</code> linking correlated actions across the network. When an unexpected stockout occurs, you need to be able to reconstruct the exact sequence of agent decisions that led there, including the demand signals each agent received, what it decided, and why.
+        </p>
+
+        <!-- S9: CONCLUSION -->
+        <h2>Conclusion: Resilience Is an Emergent Property of Decentralization</h2>
+
+        <p>
+          The brittleness of modern supply chains is not a failure of technology. ERP systems are sophisticated. Demand forecasting models are well-developed. The failure is architectural: concentrating decision-making in systems that cannot absorb information at the rate it is generated, cannot act at the speed disruptions occur, and create single points of failure that global events exploit ruthlessly.
+        </p>
+
+        <p>
+          The federated agent architecture in this essay inverts that model. Decision authority lives at the edges — at each DC, each supplier relationship, each logistics lane — close to the information and close to the action. Lateral coordination replaces vertical reporting. Autonomous action within policy bounds replaces approval queues. And the Planning Layer focuses on what it is actually good at: medium and long-horizon strategy that requires cross-network visibility and human judgment, rather than trying to micromanage every reorder decision in real time.
+        </p>
+
+        <div class="pull-quote">
+          <p>"In a centralized supply chain, resilience is designed in. In a federated agent network, resilience is emergent — the system self-heals because every node can act, not because a central system planned for every contingency."</p>
+        </div>
+
+        <p>
+          The final essay in this series closes the loop on a question every engineer building agentic systems eventually faces: how do you know when your agent is actually good? The evaluation frameworks, benchmark designs, failure taxonomies, and trust calibration methods for production agentic AI — this is the least glamorous and most important work in the field, and it has barely begun.
+        </p>
+
+      </div><!-- end .article-body -->
+
+      <footer class="article-footer">
+        <div class="author-bio-card">
+          <div class="bio-avatar">SJ</div>
+          <div>
+            <div class="bio-name">Sushant Joshi</div>
+            <div class="bio-desc">Principal Engineer building and thinking about AI systems at scale. Neural Blueprints is a record of that thinking — one deeply researched system design per week.</div>
+          </div>
+        </div>
+      </footer>
+
+    </div><!-- end .article-wrapper -->
+  </div><!-- end .layout -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof hljs !== 'undefined') hljs.highlightAll();
+      else window.addEventListener('load', function() { if (typeof hljs !== 'undefined') hljs.highlightAll(); });
+    });
+    function copyCode(btn) {
+      const pre = btn.closest('.code-block').querySelector('pre code');
+      navigator.clipboard.writeText(pre.innerText).then(() => {
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = orig; }, 2000);
+      });
+    }
+    const hamburger = document.getElementById('hamburger');
+    const sidebar   = document.getElementById('sidebar');
+    const overlay   = document.getElementById('overlay');
+    function toggleSidebar() { sidebar.classList.toggle('open'); overlay.classList.toggle('visible'); }
+    if (hamburger) hamburger.addEventListener('click', toggleSidebar);
+    if (overlay)   overlay.addEventListener('click', toggleSidebar);
+  </script>
+</body>
+</html>
