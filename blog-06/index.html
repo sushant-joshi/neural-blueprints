@@ -536,82 +536,16 @@
         <h3>The Data Model</h3>
 
         <p>
-          The <code>Reminder</code> model is the heart of the app. A single SwiftData <code>@Model</code> class with computed properties that handle all the complexity — urgency classification, effective date calculation for recurring reminders, and display formatting. The key insight: store the <em>base date</em> and <em>recurrence rule</em>, compute everything else on read.
+          The <code>Reminder</code> model is the heart of the app — a single SwiftData <code>@Model</code> class that stores the base date and recurrence rule, then computes everything else on read. The key design pattern is the <code>effectiveDate</code> computed property: it automatically advances any recurring reminder past today's date. A passport with a <code>targetDate</code> of 2020-06-15 and <code>recurrenceMonths: 120</code> (10 years) computes <code>effectiveDate</code> as 2030-06-15. The UI never shows stale dates, and the notification system always schedules from the effective date.
         </p>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">Swift</span>
-            <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('code').textContent)">Copy</button>
-          </div>
-          <pre><code class="language-swift">@Model
-final class Reminder {
-    var id: UUID = UUID()
-    var title: String = ""
-    var categoryRaw: Int16 = 0
-    var targetDate: Date = Date()
-    var recurrenceMonths: Int = 0   // 12 = yearly, 3 = quarterly, etc.
-    var recurrenceWeeks: Int = 0    // For weekly classes
-    var recurrenceDays: Int = 0     // For daily habits
-    var weekdayMask: Int = 0        // Bitmask: Mon=2, Tue=4, Wed=8...
-    var hasTimeOfDay: Bool = false   // Show time picker for classes/appointments
-    var notes: String = ""
-    var isCompleted: Bool = false
-    var isPinned: Bool = false
-    @Relationship(deleteRule: .cascade) var alerts: [ScheduledAlert]?
-    var familyMember: FamilyMember?
+        <p>
+          Urgency classification is also computed — <code>daysUntil</code> maps to five levels (overdue, critical, warning, upcoming, OK) that drive the Dashboard's color-coded grouping and the notification system's interrupt priority. When a user marks a recurring reminder as done, <code>completeAndAdvance()</code> rolls the target date forward by the recurrence period and returns <code>true</code> to signal the caller to reschedule notifications. One-time reminders simply get flagged <code>isCompleted = true</code>.
+        </p>
 
-    // Computed: auto-advance past-due recurring reminders
-    var effectiveDate: Date {
-        var date = targetDate
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-
-        if recurrenceMonths > 0 {
-            while calendar.startOfDay(for: date) < today {
-                date = calendar.date(byAdding: .month,
-                                     value: recurrenceMonths, to: date)!
-            }
-        } else if recurrenceWeeks > 0 {
-            while calendar.startOfDay(for: date) < today {
-                date = calendar.date(byAdding: .weekOfYear,
-                                     value: recurrenceWeeks, to: date)!
-            }
-        }
-        return date
-    }
-
-    // Computed: urgency classification for UI grouping
-    var urgency: UrgencyLevel {
-        let days = daysUntil
-        if days < 0    { return .overdue }
-        if days <= 7   { return .critical }
-        if days <= 30  { return .warning }
-        if days <= 90  { return .upcoming }
-        return .ok
-    }
-
-    // Mark done + auto-advance to next recurrence
-    func completeAndAdvance() -> Bool {
-        if isRecurring {
-            targetDate = effectiveDate
-            if recurrenceMonths > 0 {
-                targetDate = Calendar.current.date(
-                    byAdding: .month, value: recurrenceMonths,
-                    to: targetDate)!
-            }
-            return true  // Caller should reschedule notifications
-        }
-        isCompleted = true
-        return false
-    }
-}</code></pre>
-        </div>
-
-        <div class="callout callout-code">
-          <div class="callout-label">Design Pattern</div>
-          <p>The <code>effectiveDate</code> computed property is doing heavy lifting: it automatically advances any recurring reminder past today's date. A passport with a <code>targetDate</code> of 2020-06-15 and <code>recurrenceMonths: 120</code> (10 years) will compute <code>effectiveDate</code> as 2030-06-15. The UI never shows stale dates, and the notification system always schedules from the effective date.</p>
-        </div>
+        <p>
+          Each Reminder has a cascade-deleted array of <code>ScheduledAlert</code> objects (each specifying an offset in days, a fire hour, and an enabled toggle), an optional <code>FamilyMember</code> reference for person tagging, and a <code>categoryRaw</code> integer that decodes into the 74-case <code>ReminderCategory</code> enum.
+        </p>
 
 
         <!-- ============================== -->
@@ -631,67 +565,14 @@ final class Reminder {
         <h3>Stage 1: Real-Time Speech Recognition</h3>
 
         <p>
-          The <code>VoiceInputManager</code> wraps Apple's <code>SFSpeechRecognizer</code> with <code>AVAudioEngine</code> for real-time audio capture. The key engineering decisions:
+          The <code>VoiceInputManager</code> is an <code>@Observable</code> singleton wrapping Apple's <code>SFSpeechRecognizer</code> with <code>AVAudioEngine</code>. Three critical configuration choices make the pipeline work:
         </p>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">Swift</span>
-            <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('code').textContent)">Copy</button>
-          </div>
-          <pre><code class="language-swift">@Observable
-final class VoiceInputManager {
-    var state: VoiceInputState = .idle
-    var liveTranscript: String = ""
-    var audioLevel: Float = 0.0       // RMS level for waveform UI
-
-    private let speechRecognizer: SFSpeechRecognizer?
-    private var audioEngine = AVAudioEngine()
-    private var silenceTimer: Timer?
-
-    func startRecording() async throws {
-        let request = SFSpeechAudioBufferRecognitionRequest()
-        request.shouldReportPartialResults = true
-        request.requiresOnDeviceRecognition = true  // Never leaves device
-        request.addsPunctuation = true
-
-        recognitionTask = recognizer.recognitionTask(with: request) {
-            [weak self] result, error in
-            guard let self, let result else { return }
-
-            DispatchQueue.main.async {
-                self.liveTranscript = result.bestTranscription.formattedString
-                self.resetSilenceTimer()  // Reset 2-second auto-stop
-                if result.isFinal {
-                    self.finish(transcript: result.bestTranscription.formattedString)
-                }
-            }
-        }
-
-        // Audio tap: capture buffer + calculate RMS for visual feedback
-        let inputNode = audioEngine.inputNode
-        let format = inputNode.outputFormat(forBus: 0)
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) {
-            [weak self] buffer, _ in
-            self?.recognitionRequest?.append(buffer)
-            let level = Self.rmsLevel(buffer: buffer)
-            DispatchQueue.main.async { self?.audioLevel = level }
-        }
-
-        audioEngine.prepare()
-        try audioEngine.start()
-    }
-
-    // RMS calculation for waveform visualization
-    static func rmsLevel(buffer: AVAudioPCMBuffer) -> Float {
-        guard let data = buffer.floatChannelData?[0] else { return 0 }
-        let count = Int(buffer.frameLength)
-        var sum: Float = 0
-        for i in 0..<count { sum += data[i] * data[i] }
-        return min(sqrt(sum / Float(count)) * 3.0, 1.0)
-    }
-}</code></pre>
-        </div>
+        <ul>
+          <li><strong><code>requiresOnDeviceRecognition = true</code></strong> — Speech never leaves the device. No network call, no cloud transcription, no privacy concern. The tradeoff: on-device recognition is slightly less accurate than cloud, but for short utterances like "Mom's passport June 2030" it's more than adequate.</li>
+          <li><strong><code>shouldReportPartialResults = true</code></strong> — The transcript updates in real-time as the user speaks, providing visual feedback. Each partial result resets a 2-second silence timer.</li>
+          <li><strong>RMS audio level metering</strong> — The audio tap calculates root-mean-square level from the PCM buffer on every frame (1024 bytes), feeding a 9-bar waveform animation. This gives the user confidence that the app is "listening."</li>
+        </ul>
 
         <div class="callout callout-warning">
           <div class="callout-label">Silence Detection Nuance</div>
@@ -701,120 +582,24 @@ final class VoiceInputManager {
         <h3>Stage 2: NLP-Powered Intent Parsing</h3>
 
         <p>
-          <code>ReminderParser</code> takes the raw transcript and extracts four pieces of information: <strong>category</strong>, <strong>date</strong>, <strong>person</strong>, and <strong>title</strong>. Each extraction uses a different NLP technique:
+          <code>ReminderParser</code> takes the raw transcript and extracts four pieces of information — <strong>category</strong>, <strong>date</strong>, <strong>person</strong>, and <strong>title</strong> — each using a different NLP technique:
         </p>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">Swift</span>
-            <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('code').textContent)">Copy</button>
-          </div>
-          <pre><code class="language-swift">final class ReminderParser {
-    static let shared = ReminderParser()
+        <p>
+          <strong>Category detection</strong> uses prioritized keyword matching across 150+ phrases in 74 categories. Order matters: "car insurance" must match before "insurance," and "swim class" before "class." The keyword sets include multilingual variants — "hauptuntersuchung" for Germany's TUV inspection, "cours de danse" for French dance classes. Unrecognized phrases fall back to the generic <code>.custom</code> category.
+        </p>
 
-    func parse(_ transcript: String) -> ParsedReminder {
-        let lower = transcript.lowercased()
+        <p>
+          <strong>Person detection</strong> cascades through three strategies. First, possessive regex: "Mom's passport" extracts "Mom" (while filtering pronouns like "my" and "their"). Second, a "for" pattern: "passport for John" extracts "John." Third, Apple's <code>NLTagger</code> with the <code>.nameType</code> scheme for general person name recognition. The cascade ensures common phrasings are handled by cheap regex before falling back to the heavier NLP model.
+        </p>
 
-        let category   = detectCategory(in: lower)      // Keyword matching
-        let personName = detectPerson(in: transcript)    // NLTagger + regex
-        let (date, inferred) = detectDate(in: transcript, category: category)
-        let title      = buildTitle(category: category,
-                                    transcript: lower,
-                                    personName: personName)
-
-        return ParsedReminder(
-            category: category,
-            targetDate: date,
-            personName: personName,
-            title: title,
-            rawTranscript: transcript,
-            dateWasInferred: inferred
-        )
-    }
-
-    // CATEGORY: Multi-word keyword matching (150+ phrases across 74 categories)
-    // Order matters: "car insurance" before "insurance", "swim class" before "class"
-    private func detectCategory(in lower: String) -> ReminderCategory {
-        let keywords: [(ReminderCategory, [String])] = [
-            (.classDance,     ["dance class", "ballet class", "dance lesson"]),
-            (.classSwimming,  ["swimming class", "swim class", "swim lesson"]),
-            // ... 74 categories with multilingual keyword sets
-            (.panCard,        ["pan card", "pan number"]),           // India
-            (.motTest,        ["mot test", "mot renewal"]),          // UK
-            (.tuvInspection,  ["tüv", "tuv", "hauptuntersuchung"]), // Germany
-            (.custom,         [])  // Fallback
-        ]
-        for (category, phrases) in keywords {
-            if phrases.contains(where: { lower.contains($0) }) {
-                return category
-            }
-        }
-        return .custom
-    }
-
-    // PERSON: Three strategies, in priority order
-    private func detectPerson(in transcript: String) -> String {
-        // 1. Possessive: "Mom's passport" → "Mom"
-        if let match = transcript.range(of: #"(\b\w+)'s\b"#,
-                                        options: .regularExpression) {
-            let word = String(transcript[match]).replacingOccurrences(
-                of: "'s", with: "")
-            let ignore = ["my", "our", "their", "his", "her", "its", "your"]
-            if !ignore.contains(word.lowercased()) { return word }
-        }
-
-        // 2. "For" pattern: "passport for John" → "John"
-        if let match = transcript.range(of: #"\bfor\s+(\w+)\s*$"#,
-                                        options: .regularExpression) {
-            return String(transcript[match])
-                .replacingOccurrences(of: "for ", with: "")
-                .trimmingCharacters(in: .whitespaces)
-        }
-
-        // 3. NLTagger: Apple's NLP framework for person name detection
-        let tagger = NLTagger(tagSchemes: [.nameType])
-        tagger.string = transcript
-        var names: [String] = []
-        tagger.enumerateTags(in: transcript.startIndex..<transcript.endIndex,
-                             unit: .word, scheme: .nameType,
-                             options: [.joinNames]) { tag, range in
-            if tag == .personalName {
-                names.append(String(transcript[range]))
-            }
-            return true
-        }
-        return names.first ?? ""
-    }
-
-    // DATE: NSDataDetector with category-aware fallback defaults
-    private func detectDate(in transcript: String,
-                            category: ReminderCategory) -> (Date, Bool) {
-        let detector = try? NSDataDetector(types: NSTextCheckingResult
-                                                    .CheckingType.date.rawValue)
-        let matches = detector?.matches(in: transcript,
-                                        range: NSRange(transcript.startIndex...,
-                                                       in: transcript))
-        if let date = matches?.first?.date, date > Date() {
-            return (date, false)  // Explicit date found
-        }
-        // Category-aware defaults when no date detected
-        let fallbacks: [ReminderCategory: Int] = [
-            .passport: 60, .visa: 60,           // 5 years in months
-            .drivingLicence: 36, .insurance: 36, // 3 years
-            .birthday: 12, .anniversary: 12,     // 1 year
-            .medicalAppointment: 1, .vaccine: 1, // 1 month
-        ]
-        let months = fallbacks[category] ?? 1
-        let date = Calendar.current.date(byAdding: .month,
-                                         value: months, to: Date())!
-        return (date, true)  // Inferred — UI will show warning
-    }
-}</code></pre>
-        </div>
+        <p>
+          <strong>Date detection</strong> uses <code>NSDataDetector</code> to find dates in natural language, filtering to future dates only. When no date is found — which happens surprisingly often in voice input — the parser uses <strong>category-aware fallback defaults</strong>: passport gets 5 years from today, birthday gets 1 year, vaccine gets 1 month. The parser returns a <code>dateWasInferred</code> boolean alongside the date.
+        </p>
 
         <div class="callout callout-insight">
           <div class="callout-label">The Parsing Pipeline's Secret Weapon</div>
-          <p>The <code>dateWasInferred</code> boolean is a critical UX detail. When the parser can't find a date in the transcript, it uses a category-specific default (passport → 5 years, birthday → 1 year, vaccine → 1 month) and flags the date as inferred. The confirmation screen then shows a yellow banner: <em>"I couldn't catch the date — please set it above."</em> This turns a potentially wrong guess into a prompt for user correction. AI-generated, human-verified.</p>
+          <p>That <code>dateWasInferred</code> boolean is a critical UX detail. When the parser can't find a date in the transcript, it uses the category-specific default and flags it. The confirmation screen then shows a yellow banner: <em>"I couldn't catch the date — please set it above."</em> This turns a potentially wrong guess into a prompt for user correction. AI-generated, human-verified.</p>
         </div>
 
 
@@ -894,67 +679,16 @@ final class VoiceInputManager {
         <h3>Five Scheduling Rules</h3>
 
         <p>
-          Beyond the basic alert schedule, the <code>NotificationManager</code> implements five rules that handle subtle timing scenarios:
+          Beyond the basic alert schedule, the <code>NotificationManager</code> implements five rules that handle subtle timing scenarios most users would never think to configure:
         </p>
 
-        <div class="code-block">
-          <div class="code-header">
-            <span class="code-lang">Swift</span>
-            <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('code').textContent)">Copy</button>
-          </div>
-          <pre><code class="language-swift">func schedule(reminder: Reminder) {
-    cancel(reminder: reminder)  // Clear all existing notifications
-
-    // RULE 1: Day-of morning override
-    // "Your passport expires today" at 8 PM is useless.
-    // For all-day reminders, cap the day-of alert at 9 AM.
-    if alert.offsetDays == 0 && !reminder.hasTimeOfDay {
-        let cappedHour = min(defaultHour, 9)
-        fireDate = calendar.date(bySettingHour: cappedHour,
-                                 minute: 0, second: 0, of: fireDate)!
-    }
-
-    // RULE 2: Early-bird preparation
-    // For events before 7 AM (dog walk at 5 AM, airport at 1 AM),
-    // add a "heads up" notification at 8 PM the previous evening.
-    if reminder.hasTimeOfDay {
-        let eventHour = calendar.component(.hour, from: targetDate)
-        if eventHour < 7 {
-            let previousDay = calendar.date(byAdding: .day,
-                                            value: -1, to: targetDate)!
-            let prepFireDate = calendar.date(bySettingHour: 20,
-                                             minute: 0, second: 0,
-                                             of: previousDay)!
-            scheduleNotification(
-                id: "earlybird-\(reminder.id)",
-                title: "🌙 Tomorrow early: \(reminder.displayTitle)",
-                body: "\(title) is at \(timeStr) tomorrow morning."
-            )
-        }
-    }
-
-    // RULE 3: Evening tomorrow preview
-    // If user's default alert time is 5 PM+, show a preview at
-    // that time for reminders due tomorrow.
-    if defaultHour >= 17 && isDueTomorrow {
-        scheduleNotification(
-            id: "preview-\(reminder.id)",
-            title: "📋 Tomorrow: \(reminder.displayTitle)",
-            body: "\(title) is due tomorrow. Plan ahead tonight."
-        )
-    }
-
-    // RULE 4: Overdue nag alerts
-    // Daily "still overdue" notifications for up to 30 days.
-    // Caps at 7 notifications per reminder (iOS budget: 64 total).
-    scheduleOverdueAlerts(for: reminder)
-
-    // RULE 5: Notification actions
-    // Lock screen buttons: "Mark as Handled", "Remind in 1 Week",
-    // "Remind in 1 Month" — actionable without opening the app.
-    content.categoryIdentifier = "REMINDER_ACTIONS"
-}</code></pre>
-        </div>
+        <ol>
+          <li><strong>Day-of morning override:</strong> "Your passport expires today" at 8 PM is useless. For all-day reminders, the day-of alert is capped at 9 AM regardless of the user's default notification time.</li>
+          <li><strong>Early-bird preparation:</strong> For time-specific events before 7 AM (a dog walk at 5 AM, an airport pickup at 1 AM), the system adds a "heads up" notification at 8 PM the previous evening so the user can prepare.</li>
+          <li><strong>Evening tomorrow preview:</strong> If the user's default alert time is 5 PM or later, a preview notification fires at that time for reminders due tomorrow — because someone who checks their phone at 6 PM wants tomorrow's agenda tonight.</li>
+          <li><strong>Overdue nag alerts:</strong> Daily "still overdue" notifications after the due date, for up to 30 days. Capped at 7 notifications per reminder to stay within iOS's 64-notification budget.</li>
+          <li><strong>Lock-screen notification actions:</strong> Three buttons — "Mark as Handled," "Remind in 1 Week," "Remind in 1 Month" — so users can act without opening the app. The "Mark as Handled" action on a recurring reminder automatically advances to the next occurrence.</li>
+        </ol>
 
         <div class="callout callout-data">
           <div class="callout-label">iOS Notification Budget</div>
