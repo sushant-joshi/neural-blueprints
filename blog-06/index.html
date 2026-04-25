@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How I Shipped a Production iOS App with AI in 2 Weeks — Neural Blueprints</title>
+  <meta name="description" content="A technical deep dive into building LifeReminders — a production-grade iOS app with on-device NLP, smart notifications, and 74 intelligent categories — using AI-assisted development in 14 days.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+    :root {
+      --bg-body:        #F7F6F3;
+      --bg-sidebar:     #1A1D23;
+      --bg-card:        #FFFFFF;
+      --bg-callout-insight: #EEF2FF;
+      --bg-callout-warn:    #FFFBEB;
+      --bg-callout-code:    #ECFDF5;
+      --bg-callout-data:    #EFF6FF;
+
+      --text-primary:   #0F1117;
+      --text-secondary: #4A5568;
+      --text-sidebar:   #E2E8F0;
+      --text-sidebar-muted: #718096;
+      --text-sidebar-active: #FFFFFF;
+
+      --accent:         #5B63FE;
+      --accent-hover:   #4348D4;
+      --accent-subtle:  #EEF2FF;
+
+      --border:         #E2E8F0;
+      --border-strong:  #CBD5E1;
+
+      --text-xs:    0.75rem;
+      --text-sm:    0.875rem;
+      --text-base:  1rem;
+      --text-lg:    1.125rem;
+      --text-xl:    1.25rem;
+      --text-2xl:   1.5rem;
+      --text-3xl:   1.875rem;
+      --text-4xl:   2.25rem;
+
+      --sidebar-width: 280px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-body); color: var(--text-primary); line-height: 1.6; min-height: 100vh; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { color: var(--accent-hover); text-decoration: underline; }
+    .layout { display: grid; grid-template-columns: var(--sidebar-width) 1fr; min-height: 100vh; }
+
+    /* SIDEBAR */
+    .sidebar { background: var(--bg-sidebar); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; scrollbar-width: thin; scrollbar-color: #2D3748 transparent; }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #2D3748; border-radius: 2px; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 28px 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .brand-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .brand-icon svg { width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; }
+    .brand-name { font-size: var(--text-sm); font-weight: 700; color: var(--text-sidebar); letter-spacing: -0.01em; }
+    .brand-tagline { font-size: var(--text-xs); color: var(--text-sidebar-muted); margin-top: 2px; }
+    .nav-section { padding: 20px 12px 8px; flex: 1; }
+    .nav-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-sidebar-muted); padding: 0 8px; margin-bottom: 6px; }
+    .nav-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 10px; border-radius: 6px; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; border-left: 3px solid transparent; }
+    .nav-item:hover { background: rgba(255,255,255,0.06); text-decoration: none; }
+    .nav-item.active { border-left-color: var(--accent); background: rgba(91,99,254,0.12); }
+    .nav-item.active .nav-item-number, .nav-item.active .nav-item-title { color: var(--text-sidebar-active); }
+    .nav-item-number { font-size: var(--text-xs); font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-sidebar-muted); flex-shrink: 0; padding-top: 1px; }
+    .nav-item-title { font-size: var(--text-sm); font-weight: 500; color: var(--text-sidebar-muted); line-height: 1.4; }
+    .sidebar-footer { padding: 16px 20px 20px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; gap: 16px; }
+    .sidebar-footer a { font-size: var(--text-xs); color: var(--text-sidebar-muted); text-decoration: none; font-weight: 500; transition: color 0.15s; }
+    .sidebar-footer a:hover { color: var(--text-sidebar); }
+
+    /* ARTICLE */
+    .article-wrapper { padding: 56px 72px 80px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: var(--text-sm); font-weight: 500; color: var(--text-secondary); text-decoration: none; margin-bottom: 40px; transition: color 0.15s; }
+    .back-link:hover { color: var(--accent); text-decoration: none; }
+    .article-header { max-width: 720px; margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+    .article-meta-top { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .post-number-badge { font-size: var(--text-xs); font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); background: #F1F5F9; padding: 3px 8px; border-radius: 4px; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
+    .tag-agent    { background: rgba(52,211,153,0.12);  color: #059669; }
+    .tag-ios      { background: rgba(96,165,250,0.12);  color: #2563EB; }
+    .tag-ai       { background: rgba(167,139,250,0.12); color: #7C3AED; }
+    .tag-build    { background: rgba(251,146,60,0.12);  color: #EA580C; }
+    .article-title { font-size: var(--text-4xl); font-weight: 900; line-height: 1.15; letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 20px; }
+    .article-subtitle { font-size: var(--text-lg); color: var(--text-secondary); line-height: 1.75; margin-bottom: 28px; }
+    .article-meta-bottom { display: flex; align-items: center; gap: 20px; }
+    .author-info { display: flex; align-items: center; gap: 10px; }
+    .author-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #A78BFA); display: flex; align-items: center; justify-content: center; font-size: var(--text-sm); font-weight: 700; color: white; flex-shrink: 0; }
+    .author-name { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+    .author-role { font-size: var(--text-xs); color: var(--text-secondary); }
+    .meta-divider { color: var(--border-strong); }
+    .article-date-time { font-size: var(--text-sm); color: var(--text-secondary); }
+
+    /* BODY */
+    .article-body { max-width: 720px; font-size: var(--text-base); line-height: 1.8; color: var(--text-primary); }
+    .article-body p { margin-bottom: 1.4em; }
+    .article-body p.lead { font-size: var(--text-lg); line-height: 1.9; color: var(--text-secondary); margin-bottom: 1.6em; }
+    .article-body h2 { font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); margin-top: 3.5rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border); }
+    .article-body h3 { font-size: var(--text-xl); font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); margin-top: 2.2rem; margin-bottom: 0.7rem; }
+    .article-body ul, .article-body ol { margin-left: 1.5em; margin-bottom: 1.4em; }
+    .article-body li { margin-bottom: 0.4em; }
+    .article-body strong { font-weight: 600; }
+    .article-body code { font-family: 'JetBrains Mono', monospace; font-size: 0.875em; background: #F1F5F9; padding: 2px 6px; border-radius: 4px; color: #047857; }
+
+    .pull-quote { border-left: 4px solid var(--accent); padding: 20px 28px; margin: 2rem 0; background: var(--accent-subtle); border-radius: 0 8px 8px 0; }
+    .pull-quote p { font-size: var(--text-xl); font-weight: 500; font-style: italic; line-height: 1.5; color: var(--text-primary); margin: 0; }
+
+    .callout { border-radius: 0 8px 8px 0; padding: 16px 20px; margin: 1.6rem 0; }
+    .callout-label { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+    .callout p, .callout ul { margin-bottom: 0; font-size: var(--text-sm); line-height: 1.65; }
+    .callout-insight { border-left: 4px solid var(--accent); background: var(--bg-callout-insight); }
+    .callout-insight .callout-label { color: var(--accent); }
+    .callout-warning { border-left: 4px solid #F59E0B; background: var(--bg-callout-warn); }
+    .callout-warning .callout-label { color: #D97706; }
+    .callout-code { border-left: 4px solid #34D399; background: var(--bg-callout-code); }
+    .callout-code .callout-label { color: #059669; }
+    .callout-data { border-left: 4px solid #60A5FA; background: var(--bg-callout-data); }
+    .callout-data .callout-label { color: #2563EB; }
+
+    .scenario-box { background: var(--bg-sidebar); color: var(--text-sidebar); border-radius: 10px; padding: 28px 32px; margin: 2rem 0; }
+    .scenario-box .scenario-label { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #60A5FA; margin-bottom: 12px; }
+    .scenario-box p { font-size: var(--text-sm); line-height: 1.75; color: #CBD5E1; margin-bottom: 0.8em; }
+    .scenario-box p:last-child { margin-bottom: 0; }
+
+    .data-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 2rem 0; }
+    .data-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; text-align: center; }
+    .data-card .data-number { font-size: var(--text-3xl); font-weight: 900; letter-spacing: -0.03em; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+    .data-card .data-label { font-size: var(--text-xs); color: var(--text-secondary); font-weight: 500; line-height: 1.4; }
+
+    .property-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 2rem 0; }
+    .property-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .property-card .prop-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 18px; }
+    .property-card .prop-title { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+    .property-card .prop-desc { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.6; }
+
+    .timeline { margin: 2rem 0; padding-left: 24px; border-left: 3px solid var(--accent); }
+    .timeline-item { margin-bottom: 24px; position: relative; }
+    .timeline-item::before { content: ''; position: absolute; left: -30px; top: 6px; width: 12px; height: 12px; background: var(--accent); border-radius: 50%; border: 3px solid var(--bg-body); }
+    .timeline-day { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+    .timeline-title { font-size: var(--text-base); font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+    .timeline-desc { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; }
+
+    .table-wrapper { overflow-x: auto; margin: 1.8rem 0; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    thead tr { background: var(--bg-sidebar); color: var(--text-sidebar); }
+    thead th { padding: 12px 16px; text-align: left; font-weight: 600; font-size: var(--text-xs); letter-spacing: 0.05em; text-transform: uppercase; }
+    tbody tr:nth-child(even) { background: #F8FAFC; }
+    tbody tr:nth-child(odd) { background: var(--bg-card); }
+    tbody td { padding: 12px 16px; color: var(--text-primary); line-height: 1.5; border-top: 1px solid var(--border); vertical-align: top; }
+
+    .code-block { margin: 1.6rem 0; border-radius: 10px; overflow: hidden; border: 1px solid #21262D; }
+    .code-header { background: #161B22; padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .code-lang { font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: #8B949E; text-transform: uppercase; letter-spacing: 0.05em; }
+    .code-copy { background: none; border: 1px solid #30363D; border-radius: 4px; color: #8B949E; font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 3px 10px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .code-copy:hover { background: #21262D; color: #E2E8F0; }
+    .code-block pre { margin: 0; padding: 0; border-radius: 0; }
+    .code-block pre code { padding: 20px !important; font-size: 13.5px !important; line-height: 1.65 !important; font-family: 'JetBrains Mono', 'Fira Code', monospace !important; }
+
+    .diagram-section { margin: 2.5rem 0; }
+    .diagram-title { font-size: var(--text-sm); font-weight: 600; color: var(--text-secondary); text-align: center; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .diagram-container { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; overflow-x: auto; }
+    .diagram-container svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+    .diagram-caption { font-size: var(--text-xs); color: var(--text-secondary); text-align: center; margin-top: 12px; font-style: italic; }
+
+    .article-footer { max-width: 720px; margin-top: 64px; padding-top: 40px; border-top: 1px solid var(--border); }
+    .author-bio-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 24px 28px; display: flex; gap: 20px; align-items: flex-start; }
+    .bio-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #A78BFA); display: flex; align-items: center; justify-content: center; font-size: var(--text-lg); font-weight: 700; color: white; flex-shrink: 0; }
+    .bio-name { font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .bio-desc { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; }
+
+    /* Mobile */
+    .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; height: 56px; background: var(--bg-sidebar); align-items: center; justify-content: space-between; padding: 0 20px; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .mobile-brand { font-size: var(--text-sm); font-weight: 700; color: var(--text-sidebar); }
+    .hamburger { background: none; border: none; cursor: pointer; padding: 4px; display: flex; flex-direction: column; gap: 5px; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--text-sidebar); border-radius: 1px; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
+    @media (max-width: 767px) {
+      .mobile-header { display: flex; }
+      .layout { grid-template-columns: 1fr; padding-top: 56px; }
+      .sidebar { position: fixed; top: 56px; left: 0; height: calc(100vh - 56px); z-index: 100; transform: translateX(-100%); transition: transform 0.25s ease; width: var(--sidebar-width); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.visible { display: block; }
+      .article-wrapper { padding: 28px 20px 60px; }
+      .article-title { font-size: var(--text-3xl); }
+      .data-cards { grid-template-columns: 1fr; }
+      .property-grid { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 768px) and (max-width: 1024px) {
+      :root { --sidebar-width: 240px; }
+      .article-wrapper { padding: 48px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="mobile-header">
+    <span class="mobile-brand">Neural Blueprints</span>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+  <div class="sidebar-overlay" id="overlay"></div>
+
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="12 2 2 7 12 12 22 7 12 2"></polyline>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">Neural Blueprints</div>
+          <div class="brand-tagline">Sushant Joshi · AI Systems</div>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-label">Agentic AI</div>
+        <a class="nav-item active" href="../blog-06/">
+          <span class="nav-item-number">06</span>
+          <span class="nav-item-title">Shipping an App with AI</span>
+        </a>
+        <a class="nav-item" href="../blog-05/">
+          <span class="nav-item-number">05</span>
+          <span class="nav-item-title">Agentic Memory Architecture</span>
+        </a>
+        <a class="nav-item" href="../blog-04/">
+          <span class="nav-item-number">04</span>
+          <span class="nav-item-title">Autonomous Supply Chain</span>
+        </a>
+        <a class="nav-item" href="../blog-03/">
+          <span class="nav-item-number">03</span>
+          <span class="nav-item-title">Drug Discovery at Machine Speed</span>
+        </a>
+        <a class="nav-item" href="../blog-02/">
+          <span class="nav-item-number">02</span>
+          <span class="nav-item-title">Autonomous Security Operations</span>
+        </a>
+        <a class="nav-item" href="../blog-01/">
+          <span class="nav-item-number">01</span>
+          <span class="nav-item-title">Autonomous Software Engineering</span>
+        </a>
+      </div>
+      <div class="sidebar-footer">
+        <a href="https://github.com/sushant-joshi" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://linkedin.com/in/sushantnpj" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </nav>
+
+    <!-- ARTICLE -->
+    <div class="article-wrapper">
+
+      <a class="back-link" href="../">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        All Essays
+      </a>
+
+      <header class="article-header">
+        <div class="article-meta-top">
+          <span class="post-number-badge">Essay 06</span>
+          <span class="tag tag-ai">AI-Assisted Dev</span>
+          <span class="tag tag-ios">SwiftUI</span>
+          <span class="tag tag-build">Builder's Log</span>
+        </div>
+        <h1 class="article-title">How I Shipped a Production iOS App with AI in 2 Weeks</h1>
+        <p class="article-subtitle">
+          36 Swift files. 74 intelligent categories. On-device NLP voice parsing. A smart notification engine with 5 scheduling rules. Multi-platform targets for iOS, macOS, and watchOS. Zero third-party dependencies. Two weeks from empty Xcode project to App Store submission. This is the technical story of how AI changed the way I build software.
+        </p>
+        <div class="article-meta-bottom">
+          <div class="author-info">
+            <div class="author-avatar">SJ</div>
+            <div>
+              <div class="author-name">Sushant Joshi</div>
+              <div class="author-role">Principal Engineer · AI Systems</div>
+            </div>
+          </div>
+          <span class="meta-divider">·</span>
+          <span class="article-date-time">April 19, 2026 &nbsp;·&nbsp; 28 min read</span>
+        </div>
+      </header>
+
+      <div class="article-body">
+
+        <!-- ============================== -->
+        <!-- 1. THE HOOK                     -->
+        <!-- ============================== -->
+
+        <p class="lead">
+          I've been a professional software engineer for over a decade. In that time, I've shipped products at companies large and small. But I've never shipped anything as fast as LifeReminders — a full-featured, native iOS app that went from zero lines of code to App Store submission in 14 days. Not a prototype. Not an MVP. A production app with on-device voice recognition, NLP-powered intent parsing, an intelligent notification system with five distinct scheduling rules, and 74 categories spanning passports to pet vaccines, localized across six countries.
+        </p>
+
+        <p>
+          The difference wasn't that I worked harder. The difference was that I worked <strong>with an AI coding agent</strong> as my pair programming partner for nearly every line of code. This essay is a technical deep dive into <em>what</em> was built, <em>how</em> AI changed the development process, and — most importantly — <em>where</em> AI added genuine leverage versus where it created problems I had to fix.
+        </p>
+
+        <div class="data-cards">
+          <div class="data-card">
+            <div class="data-number">36</div>
+            <div class="data-label">Swift files across iOS, macOS, and watchOS targets</div>
+          </div>
+          <div class="data-card">
+            <div class="data-number">0</div>
+            <div class="data-label">Third-party dependencies — pure native Apple frameworks</div>
+          </div>
+          <div class="data-card">
+            <div class="data-number">74</div>
+            <div class="data-label">Smart categories with region-aware defaults and alert schedules</div>
+          </div>
+        </div>
+
+        <p>
+          This isn't a "look how cool AI is" post. It's an engineering post-mortem: what the architecture looks like, what design decisions were made and why, and how a human-AI collaboration actually works at the level of real code.
+        </p>
+
+
+        <!-- ============================== -->
+        <!-- 2. WHAT WE BUILT                -->
+        <!-- ============================== -->
+
+        <h2>1. The App: LifeReminders</h2>
+
+        <p>
+          LifeReminders is a <strong>privacy-first life event tracker</strong> that ensures you never miss an expiration, renewal, or recurring obligation. Passport expiring in six months? It nags you starting at the right time. Kid's swim class every Tuesday? It handles the recurrence. Oil change every 5,000 miles? It knows the default interval for your region.
+        </p>
+
+        <p>
+          The core insight behind the app is that most reminder apps are generic — they treat "buy milk" the same as "renew passport." But these are fundamentally different kinds of reminders. A passport renewal needs alerts starting 6 months out. A birthday needs a reminder 1 week before. A fire extinguisher inspection is every 12 months. LifeReminders encodes this domain knowledge into <strong>74 smart categories</strong>, each with pre-configured alert schedules, recurrence patterns, and region-appropriate defaults.
+        </p>
+
+        <div class="scenario-box">
+          <div class="scenario-label">What 74 Categories Looks Like</div>
+          <p><strong>Travel & Identity:</strong> Passport, Visa, Driving Licence, Child Passport, Aadhaar (India), PAN Card (India)</p>
+          <p><strong>Home:</strong> Air Filter, HVAC Service, Water Filter, Pest Control, Smoke Detector, Fire Extinguisher</p>
+          <p><strong>Vehicles:</strong> Oil Change, Car Service, Tire Rotation, Car Registration, Smog Check (US), MOT Test (UK), TUV (Germany), PUC Certificate (India)</p>
+          <p><strong>Finance:</strong> Credit Card Expiry, Bank Locker Renewal, KYC, FSA Funds (US), Cancel Free Trial, Certificate of Deposit</p>
+          <p><strong>Health:</strong> Medical Appointment, Vaccine, Dental Checkup, Eye Exam, Medication Refill, Pet Vaccine, Flea & Tick Meds</p>
+          <p><strong>Classes:</strong> Dance, Yoga, Swimming, Tennis, Karate — each with weekday-mask recurrence and minute-precision alerts</p>
+          <p><strong>Student:</strong> Assignment, Test, Project, Exam, Class Enrollment</p>
+          <p><strong>Region-Specific:</strong> TV Licence (UK), Ramonage/chimney sweep (France), COE Renewal (Singapore), Rundfunkbeitrag (Germany)</p>
+        </div>
+
+        <h3>The Technical Stack</h3>
+
+        <p>
+          The entire app is built on native Apple frameworks. No React Native, no Flutter, no third-party dependencies:
+        </p>
+
+        <ul>
+          <li><strong>SwiftUI + SwiftData</strong> — Declarative UI with Apple's modern persistence layer (replaces CoreData)</li>
+          <li><strong>SFSpeechRecognizer + AVAudioEngine</strong> — On-device voice transcription with real-time RMS audio level metering</li>
+          <li><strong>NLTagger + NSDataDetector</strong> — Person name extraction and date parsing from natural language</li>
+          <li><strong>UNUserNotificationCenter</strong> — Local notifications with custom action categories and overdue nag persistence</li>
+          <li><strong>StoreKit 2</strong> — In-app purchase for Pro tier (one-time $4.99, not subscription)</li>
+          <li><strong>ActivityKit</strong> — iOS 16.1+ Live Activities on lock screen and Dynamic Island</li>
+          <li><strong>CloudKit</strong> — Private database sync for Pro users (Apple handles encryption — developer never sees user data)</li>
+        </ul>
+
+        <div class="callout callout-insight">
+          <div class="callout-label">Architecture Decision</div>
+          <p>Zero third-party dependencies was a deliberate choice, not a constraint. Native frameworks mean no supply chain risk, no version conflicts, no abandoned maintainers. SwiftData + CloudKit gives you persistence and sync without writing a single line of server code. The tradeoff: you're locked to Apple's ecosystem. For an app whose users are definitionally on iPhones, that's an acceptable tradeoff.</p>
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- 3. THE ARCHITECTURE             -->
+        <!-- ============================== -->
+
+        <h2>2. Architecture: Data Model to Notification Pipeline</h2>
+
+        <p>
+          The architecture follows a clean layered pattern: <strong>Models</strong> (SwiftData entities), <strong>Services</strong> (business logic singletons), and <strong>Views</strong> (SwiftUI declarative UI). No MVVM ceremony, no coordinators, no dependency injection frameworks. The service layer uses Apple's <code>@Observable</code> macro for reactive state management.
+        </p>
+
+        <!-- SVG Architecture Diagram -->
+        <div class="diagram-section">
+          <div class="diagram-title">LifeReminders — Full System Architecture</div>
+          <div class="diagram-container">
+            <svg viewBox="0 0 900 620" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+              <defs>
+                <marker id="arrow-d" viewBox="0 0 10 10" refX="5" refY="10" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L5,10 L10,0" fill="#4A5568"/></marker>
+                <marker id="arrow-r" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10" fill="#4A5568"/></marker>
+                <filter id="sh" x="-4%" y="-4%" width="108%" height="108%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/></filter>
+              </defs>
+
+              <!-- Layer 1: User Input -->
+              <rect x="20" y="10" width="860" height="65" rx="10" fill="#EFF6FF" stroke="#60A5FA" stroke-width="1.5" filter="url(#sh)"/>
+              <text x="450" y="32" text-anchor="middle" font-size="11" font-weight="700" fill="#2563EB" letter-spacing="0.08em">USER INPUT</text>
+              <rect x="60" y="42" width="150" height="26" rx="6" fill="#DBEAFE" stroke="#93C5FD"/>
+              <text x="135" y="59" text-anchor="middle" font-size="10" font-weight="600" fill="#1E40AF">Voice (Microphone)</text>
+              <rect x="230" y="42" width="150" height="26" rx="6" fill="#DBEAFE" stroke="#93C5FD"/>
+              <text x="305" y="59" text-anchor="middle" font-size="10" font-weight="600" fill="#1E40AF">Quick Add (Form)</text>
+              <rect x="400" y="42" width="150" height="26" rx="6" fill="#DBEAFE" stroke="#93C5FD"/>
+              <text x="475" y="59" text-anchor="middle" font-size="10" font-weight="600" fill="#1E40AF">Notification Action</text>
+              <rect x="570" y="42" width="140" height="26" rx="6" fill="#DBEAFE" stroke="#93C5FD"/>
+              <text x="640" y="59" text-anchor="middle" font-size="10" font-weight="600" fill="#1E40AF">Swipe Gesture</text>
+              <rect x="730" y="42" width="120" height="26" rx="6" fill="#DBEAFE" stroke="#93C5FD"/>
+              <text x="790" y="59" text-anchor="middle" font-size="10" font-weight="600" fill="#1E40AF">Watch Input</text>
+
+              <!-- Arrows down -->
+              <line x1="135" y1="75" x2="135" y2="100" stroke="#4A5568" stroke-width="1.2" marker-end="url(#arrow-d)"/>
+              <line x1="305" y1="75" x2="450" y2="100" stroke="#4A5568" stroke-width="1.2" marker-end="url(#arrow-d)"/>
+              <line x1="475" y1="75" x2="450" y2="100" stroke="#4A5568" stroke-width="1.2" marker-end="url(#arrow-d)"/>
+
+              <!-- Layer 2: AI/NLP Pipeline (voice path only) -->
+              <rect x="20" y="105" width="280" height="110" rx="10" fill="rgba(167,139,250,0.08)" stroke="#A78BFA" stroke-width="1.5" filter="url(#sh)"/>
+              <text x="160" y="125" text-anchor="middle" font-size="10" font-weight="700" fill="#7C3AED" letter-spacing="0.06em">ON-DEVICE AI / NLP PIPELINE</text>
+              <rect x="35" y="135" width="110" height="22" rx="4" fill="#EDE9FE"/>
+              <text x="90" y="150" text-anchor="middle" font-size="9" font-weight="600" fill="#5B21B6">SFSpeechRecognizer</text>
+              <rect x="35" y="163" width="110" height="22" rx="4" fill="#EDE9FE"/>
+              <text x="90" y="178" text-anchor="middle" font-size="9" font-weight="600" fill="#5B21B6">AVAudioEngine</text>
+              <rect x="160" y="135" width="125" height="22" rx="4" fill="#EDE9FE"/>
+              <text x="223" y="150" text-anchor="middle" font-size="9" font-weight="600" fill="#5B21B6">ReminderParser</text>
+              <rect x="160" y="163" width="60" height="22" rx="4" fill="#EDE9FE"/>
+              <text x="190" y="178" text-anchor="middle" font-size="9" font-weight="600" fill="#5B21B6">NLTagger</text>
+              <rect x="225" y="163" width="60" height="22" rx="4" fill="#EDE9FE"/>
+              <text x="255" y="178" text-anchor="middle" font-size="9" font-weight="600" fill="#5B21B6">NSData&#8203;Det</text>
+              <text x="160" y="205" text-anchor="middle" font-size="8" fill="#6D28D9">Category + Date + Person + Title</text>
+
+              <!-- Layer 2b: Service Layer -->
+              <rect x="320" y="105" width="560" height="110" rx="10" fill="rgba(52,211,153,0.08)" stroke="#34D399" stroke-width="1.5" filter="url(#sh)"/>
+              <text x="600" y="125" text-anchor="middle" font-size="10" font-weight="700" fill="#059669" letter-spacing="0.06em">SERVICE LAYER (@Observable Singletons)</text>
+              <rect x="335" y="140" width="125" height="28" rx="6" fill="#D1FAE5" stroke="#A7F3D0"/>
+              <text x="398" y="158" text-anchor="middle" font-size="9" font-weight="600" fill="#065F46">NotificationManager</text>
+              <rect x="475" y="140" width="100" height="28" rx="6" fill="#D1FAE5" stroke="#A7F3D0"/>
+              <text x="525" y="158" text-anchor="middle" font-size="9" font-weight="600" fill="#065F46">TierManager</text>
+              <rect x="590" y="140" width="100" height="28" rx="6" fill="#D1FAE5" stroke="#A7F3D0"/>
+              <text x="640" y="158" text-anchor="middle" font-size="9" font-weight="600" fill="#065F46">StoreManager</text>
+              <rect x="705" y="140" width="155" height="28" rx="6" fill="#D1FAE5" stroke="#A7F3D0"/>
+              <text x="783" y="158" text-anchor="middle" font-size="9" font-weight="600" fill="#065F46">LiveActivityCoordinator</text>
+              <rect x="335" y="178" width="125" height="28" rx="6" fill="#D1FAE5" stroke="#A7F3D0"/>
+              <text x="398" y="196" text-anchor="middle" font-size="9" font-weight="600" fill="#065F46">VoiceInputManager</text>
+              <rect x="475" y="178" width="125" height="28" rx="6" fill="#D1FAE5" stroke="#A7F3D0"/>
+              <text x="538" y="196" text-anchor="middle" font-size="9" font-weight="600" fill="#065F46">CategoryLocalization</text>
+
+              <!-- Arrow: NLP → Services -->
+              <line x1="300" y1="160" x2="330" y2="160" stroke="#4A5568" stroke-width="1.2" marker-end="url(#arrow-r)"/>
+
+              <!-- Arrows down to Model -->
+              <line x1="160" y1="215" x2="160" y2="245" stroke="#4A5568" stroke-width="1.2" marker-end="url(#arrow-d)"/>
+              <line x1="450" y1="215" x2="450" y2="245" stroke="#4A5568" stroke-width="1.2" marker-end="url(#arrow-d)"/>
+
+              <!-- Layer 3: Data Model (SwiftData) -->
+              <rect x="20" y="250" width="860" height="95" rx="10" fill="rgba(251,191,36,0.08)" stroke="#FBBF24" stroke-width="1.5" filter="url(#sh)"/>
+              <text x="450" y="272" text-anchor="middle" font-size="11" font-weight="700" fill="#92400E" letter-spacing="0.08em">SWIFTDATA MODEL LAYER</text>
+
+              <rect x="50" y="285" width="200" height="48" rx="8" fill="#FEF3C7" stroke="#FDE68A"/>
+              <text x="150" y="303" text-anchor="middle" font-size="10" font-weight="700" fill="#92400E">Reminder</text>
+              <text x="150" y="323" text-anchor="middle" font-size="8" fill="#78350F">title · category · targetDate · recurrence · urgency</text>
+
+              <rect x="280" y="285" width="180" height="48" rx="8" fill="#FEF3C7" stroke="#FDE68A"/>
+              <text x="370" y="303" text-anchor="middle" font-size="10" font-weight="700" fill="#92400E">ScheduledAlert</text>
+              <text x="370" y="323" text-anchor="middle" font-size="8" fill="#78350F">offsetDays · fireHour · isEnabled</text>
+
+              <rect x="490" y="285" width="160" height="48" rx="8" fill="#FEF3C7" stroke="#FDE68A"/>
+              <text x="570" y="303" text-anchor="middle" font-size="10" font-weight="700" fill="#92400E">FamilyMember</text>
+              <text x="570" y="323" text-anchor="middle" font-size="8" fill="#78350F">name · emoji · colorHex</text>
+
+              <rect x="680" y="285" width="180" height="48" rx="8" fill="#FEF3C7" stroke="#FDE68A"/>
+              <text x="770" y="303" text-anchor="middle" font-size="10" font-weight="700" fill="#92400E">ReminderCategory</text>
+              <text x="770" y="323" text-anchor="middle" font-size="8" fill="#78350F">74 cases · alerts · recurrence · region</text>
+
+              <!-- Relationship lines -->
+              <line x1="250" y1="309" x2="280" y2="309" stroke="#92400E" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="460" y1="309" x2="490" y2="309" stroke="#92400E" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="650" y1="309" x2="680" y2="309" stroke="#92400E" stroke-width="1" stroke-dasharray="3,3"/>
+
+              <!-- Arrows down to View Layer -->
+              <line x1="450" y1="345" x2="450" y2="375" stroke="#4A5568" stroke-width="1.5" marker-end="url(#arrow-d)"/>
+
+              <!-- Layer 4: View Layer -->
+              <rect x="20" y="380" width="860" height="95" rx="10" fill="rgba(99,102,241,0.06)" stroke="#818CF8" stroke-width="1.5" filter="url(#sh)"/>
+              <text x="450" y="400" text-anchor="middle" font-size="11" font-weight="700" fill="#4338CA" letter-spacing="0.08em">SWIFTUI VIEW LAYER</text>
+              <rect x="40" y="412" width="115" height="26" rx="6" fill="#E0E7FF" stroke="#C7D2FE"/>
+              <text x="98" y="429" text-anchor="middle" font-size="9" font-weight="600" fill="#3730A3">DashboardView</text>
+              <rect x="165" y="412" width="95" height="26" rx="6" fill="#E0E7FF" stroke="#C7D2FE"/>
+              <text x="213" y="429" text-anchor="middle" font-size="9" font-weight="600" fill="#3730A3">TimelineView</text>
+              <rect x="270" y="412" width="95" height="26" rx="6" fill="#E0E7FF" stroke="#C7D2FE"/>
+              <text x="318" y="429" text-anchor="middle" font-size="9" font-weight="600" fill="#3730A3">CalendarView</text>
+              <rect x="375" y="412" width="100" height="26" rx="6" fill="#E0E7FF" stroke="#C7D2FE"/>
+              <text x="425" y="429" text-anchor="middle" font-size="9" font-weight="600" fill="#3730A3">VoiceAddView</text>
+              <rect x="485" y="412" width="100" height="26" rx="6" fill="#E0E7FF" stroke="#C7D2FE"/>
+              <text x="535" y="429" text-anchor="middle" font-size="9" font-weight="600" fill="#3730A3">QuickAddView</text>
+              <rect x="595" y="412" width="100" height="26" rx="6" fill="#E0E7FF" stroke="#C7D2FE"/>
+              <text x="645" y="429" text-anchor="middle" font-size="9" font-weight="600" fill="#3730A3">DetailView</text>
+              <rect x="705" y="412" width="80" height="26" rx="6" fill="#E0E7FF" stroke="#C7D2FE"/>
+              <text x="745" y="429" text-anchor="middle" font-size="9" font-weight="600" fill="#3730A3">Settings</text>
+              <rect x="795" y="412" width="70" height="26" rx="6" fill="#E0E7FF" stroke="#C7D2FE"/>
+              <text x="830" y="429" text-anchor="middle" font-size="9" font-weight="600" fill="#3730A3">Family</text>
+
+              <text x="450" y="462" text-anchor="middle" font-size="9" fill="#4338CA">ContentView routes between tab (iPhone) and sidebar (iPad) layouts via size class detection</text>
+
+              <!-- Arrows down to Platform Layer -->
+              <line x1="450" y1="475" x2="450" y2="505" stroke="#4A5568" stroke-width="1.5" marker-end="url(#arrow-d)"/>
+
+              <!-- Layer 5: Platform Targets -->
+              <rect x="20" y="510" width="860" height="55" rx="10" fill="rgba(248,113,113,0.06)" stroke="#F87171" stroke-width="1.5" filter="url(#sh)"/>
+              <text x="450" y="532" text-anchor="middle" font-size="11" font-weight="700" fill="#DC2626" letter-spacing="0.08em">PLATFORM TARGETS</text>
+              <rect x="60" y="542" width="140" height="18" rx="4" fill="#FEE2E2"/>
+              <text x="130" y="555" text-anchor="middle" font-size="9" font-weight="600" fill="#991B1B">iOS / iPadOS 17+</text>
+              <rect x="220" y="542" width="120" height="18" rx="4" fill="#FEE2E2"/>
+              <text x="280" y="555" text-anchor="middle" font-size="9" font-weight="600" fill="#991B1B">macOS 14+</text>
+              <rect x="360" y="542" width="120" height="18" rx="4" fill="#FEE2E2"/>
+              <text x="420" y="555" text-anchor="middle" font-size="9" font-weight="600" fill="#991B1B">watchOS 10+</text>
+              <rect x="500" y="542" width="120" height="18" rx="4" fill="#FEE2E2"/>
+              <text x="560" y="555" text-anchor="middle" font-size="9" font-weight="600" fill="#991B1B">Live Activity Widget</text>
+              <rect x="640" y="542" width="100" height="18" rx="4" fill="#FEE2E2"/>
+              <text x="690" y="555" text-anchor="middle" font-size="9" font-weight="600" fill="#991B1B">CloudKit Sync</text>
+              <rect x="760" y="542" width="100" height="18" rx="4" fill="#FEE2E2"/>
+              <text x="810" y="555" text-anchor="middle" font-size="9" font-weight="600" fill="#991B1B">Google AdMob</text>
+
+              <!-- Legend -->
+              <rect x="20" y="580" width="440" height="30" rx="5" fill="#F8FAFC" stroke="#E2E8F0"/>
+              <rect x="30" y="588" width="10" height="10" rx="2" fill="rgba(167,139,250,0.15)" stroke="#A78BFA"/>
+              <text x="45" y="598" font-size="8" fill="#4A5568">AI/NLP (voice path)</text>
+              <rect x="130" y="588" width="10" height="10" rx="2" fill="rgba(52,211,153,0.15)" stroke="#34D399"/>
+              <text x="145" y="598" font-size="8" fill="#4A5568">Services</text>
+              <rect x="195" y="588" width="10" height="10" rx="2" fill="rgba(251,191,36,0.15)" stroke="#FBBF24"/>
+              <text x="210" y="598" font-size="8" fill="#4A5568">SwiftData Models</text>
+              <rect x="290" y="588" width="10" height="10" rx="2" fill="rgba(99,102,241,0.15)" stroke="#818CF8"/>
+              <text x="305" y="598" font-size="8" fill="#4A5568">SwiftUI Views</text>
+              <rect x="370" y="588" width="10" height="10" rx="2" fill="rgba(248,113,113,0.15)" stroke="#F87171"/>
+              <text x="385" y="598" font-size="8" fill="#4A5568">Platform Targets</text>
+            </svg>
+          </div>
+          <div class="diagram-caption">Fig 1. LifeReminders system architecture — voice input flows through an on-device NLP pipeline, then joins the shared service and data layers that serve all views and platform targets.</div>
+        </div>
+
+        <h3>The Data Model</h3>
+
+        <p>
+          The <code>Reminder</code> model is the heart of the app. A single SwiftData <code>@Model</code> class with computed properties that handle all the complexity — urgency classification, effective date calculation for recurring reminders, and display formatting. The key insight: store the <em>base date</em> and <em>recurrence rule</em>, compute everything else on read.
+        </p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Swift</span>
+            <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('code').textContent)">Copy</button>
+          </div>
+          <pre><code class="language-swift">@Model
+final class Reminder {
+    var id: UUID = UUID()
+    var title: String = ""
+    var categoryRaw: Int16 = 0
+    var targetDate: Date = Date()
+    var recurrenceMonths: Int = 0   // 12 = yearly, 3 = quarterly, etc.
+    var recurrenceWeeks: Int = 0    // For weekly classes
+    var recurrenceDays: Int = 0     // For daily habits
+    var weekdayMask: Int = 0        // Bitmask: Mon=2, Tue=4, Wed=8...
+    var hasTimeOfDay: Bool = false   // Show time picker for classes/appointments
+    var notes: String = ""
+    var isCompleted: Bool = false
+    var isPinned: Bool = false
+    @Relationship(deleteRule: .cascade) var alerts: [ScheduledAlert]?
+    var familyMember: FamilyMember?
+
+    // Computed: auto-advance past-due recurring reminders
+    var effectiveDate: Date {
+        var date = targetDate
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        if recurrenceMonths > 0 {
+            while calendar.startOfDay(for: date) < today {
+                date = calendar.date(byAdding: .month,
+                                     value: recurrenceMonths, to: date)!
+            }
+        } else if recurrenceWeeks > 0 {
+            while calendar.startOfDay(for: date) < today {
+                date = calendar.date(byAdding: .weekOfYear,
+                                     value: recurrenceWeeks, to: date)!
+            }
+        }
+        return date
+    }
+
+    // Computed: urgency classification for UI grouping
+    var urgency: UrgencyLevel {
+        let days = daysUntil
+        if days < 0    { return .overdue }
+        if days <= 7   { return .critical }
+        if days <= 30  { return .warning }
+        if days <= 90  { return .upcoming }
+        return .ok
+    }
+
+    // Mark done + auto-advance to next recurrence
+    func completeAndAdvance() -> Bool {
+        if isRecurring {
+            targetDate = effectiveDate
+            if recurrenceMonths > 0 {
+                targetDate = Calendar.current.date(
+                    byAdding: .month, value: recurrenceMonths,
+                    to: targetDate)!
+            }
+            return true  // Caller should reschedule notifications
+        }
+        isCompleted = true
+        return false
+    }
+}</code></pre>
+        </div>
+
+        <div class="callout callout-code">
+          <div class="callout-label">Design Pattern</div>
+          <p>The <code>effectiveDate</code> computed property is doing heavy lifting: it automatically advances any recurring reminder past today's date. A passport with a <code>targetDate</code> of 2020-06-15 and <code>recurrenceMonths: 120</code> (10 years) will compute <code>effectiveDate</code> as 2030-06-15. The UI never shows stale dates, and the notification system always schedules from the effective date.</p>
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- 4. DEEP DIVE: VOICE/NLP         -->
+        <!-- ============================== -->
+
+        <h2>3. Deep Dive: The On-Device Voice & NLP Pipeline</h2>
+
+        <p>
+          The voice input system is the most technically interesting feature. A user taps the microphone button, says "Mom's passport expires June 2030," and the app creates a reminder with category <em>Passport</em>, target date <em>June 2030</em>, family member <em>Mom</em>, and title <em>Passport</em> — with the correct alert schedule (6 months, 3 months, 1 month, 1 week, day-of) pre-configured. No internet connection required.
+        </p>
+
+        <p>
+          The pipeline has three stages: <strong>speech-to-text</strong> (SFSpeechRecognizer), <strong>intent parsing</strong> (ReminderParser), and <strong>confirmation UI</strong> (VoiceAddView). Each stage runs entirely on-device.
+        </p>
+
+        <h3>Stage 1: Real-Time Speech Recognition</h3>
+
+        <p>
+          The <code>VoiceInputManager</code> wraps Apple's <code>SFSpeechRecognizer</code> with <code>AVAudioEngine</code> for real-time audio capture. The key engineering decisions:
+        </p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Swift</span>
+            <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('code').textContent)">Copy</button>
+          </div>
+          <pre><code class="language-swift">@Observable
+final class VoiceInputManager {
+    var state: VoiceInputState = .idle
+    var liveTranscript: String = ""
+    var audioLevel: Float = 0.0       // RMS level for waveform UI
+
+    private let speechRecognizer: SFSpeechRecognizer?
+    private var audioEngine = AVAudioEngine()
+    private var silenceTimer: Timer?
+
+    func startRecording() async throws {
+        let request = SFSpeechAudioBufferRecognitionRequest()
+        request.shouldReportPartialResults = true
+        request.requiresOnDeviceRecognition = true  // Never leaves device
+        request.addsPunctuation = true
+
+        recognitionTask = recognizer.recognitionTask(with: request) {
+            [weak self] result, error in
+            guard let self, let result else { return }
+
+            DispatchQueue.main.async {
+                self.liveTranscript = result.bestTranscription.formattedString
+                self.resetSilenceTimer()  // Reset 2-second auto-stop
+                if result.isFinal {
+                    self.finish(transcript: result.bestTranscription.formattedString)
+                }
+            }
+        }
+
+        // Audio tap: capture buffer + calculate RMS for visual feedback
+        let inputNode = audioEngine.inputNode
+        let format = inputNode.outputFormat(forBus: 0)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) {
+            [weak self] buffer, _ in
+            self?.recognitionRequest?.append(buffer)
+            let level = Self.rmsLevel(buffer: buffer)
+            DispatchQueue.main.async { self?.audioLevel = level }
+        }
+
+        audioEngine.prepare()
+        try audioEngine.start()
+    }
+
+    // RMS calculation for waveform visualization
+    static func rmsLevel(buffer: AVAudioPCMBuffer) -> Float {
+        guard let data = buffer.floatChannelData?[0] else { return 0 }
+        let count = Int(buffer.frameLength)
+        var sum: Float = 0
+        for i in 0..<count { sum += data[i] * data[i] }
+        return min(sqrt(sum / Float(count)) * 3.0, 1.0)
+    }
+}</code></pre>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-label">Silence Detection Nuance</div>
+          <p>The 2-second silence timer was the result of iteration. 1 second was too aggressive — users pause mid-sentence when thinking of dates. 3 seconds felt sluggish. 2 seconds hits the sweet spot. The timer resets on every partial result from the recognizer, so it only fires after 2 seconds of <em>no new speech detected</em>, not 2 seconds of audio silence (background noise doesn't count).</p>
+        </div>
+
+        <h3>Stage 2: NLP-Powered Intent Parsing</h3>
+
+        <p>
+          <code>ReminderParser</code> takes the raw transcript and extracts four pieces of information: <strong>category</strong>, <strong>date</strong>, <strong>person</strong>, and <strong>title</strong>. Each extraction uses a different NLP technique:
+        </p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Swift</span>
+            <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('code').textContent)">Copy</button>
+          </div>
+          <pre><code class="language-swift">final class ReminderParser {
+    static let shared = ReminderParser()
+
+    func parse(_ transcript: String) -> ParsedReminder {
+        let lower = transcript.lowercased()
+
+        let category   = detectCategory(in: lower)      // Keyword matching
+        let personName = detectPerson(in: transcript)    // NLTagger + regex
+        let (date, inferred) = detectDate(in: transcript, category: category)
+        let title      = buildTitle(category: category,
+                                    transcript: lower,
+                                    personName: personName)
+
+        return ParsedReminder(
+            category: category,
+            targetDate: date,
+            personName: personName,
+            title: title,
+            rawTranscript: transcript,
+            dateWasInferred: inferred
+        )
+    }
+
+    // CATEGORY: Multi-word keyword matching (150+ phrases across 74 categories)
+    // Order matters: "car insurance" before "insurance", "swim class" before "class"
+    private func detectCategory(in lower: String) -> ReminderCategory {
+        let keywords: [(ReminderCategory, [String])] = [
+            (.classDance,     ["dance class", "ballet class", "dance lesson"]),
+            (.classSwimming,  ["swimming class", "swim class", "swim lesson"]),
+            // ... 74 categories with multilingual keyword sets
+            (.panCard,        ["pan card", "pan number"]),           // India
+            (.motTest,        ["mot test", "mot renewal"]),          // UK
+            (.tuvInspection,  ["tüv", "tuv", "hauptuntersuchung"]), // Germany
+            (.custom,         [])  // Fallback
+        ]
+        for (category, phrases) in keywords {
+            if phrases.contains(where: { lower.contains($0) }) {
+                return category
+            }
+        }
+        return .custom
+    }
+
+    // PERSON: Three strategies, in priority order
+    private func detectPerson(in transcript: String) -> String {
+        // 1. Possessive: "Mom's passport" → "Mom"
+        if let match = transcript.range(of: #"(\b\w+)'s\b"#,
+                                        options: .regularExpression) {
+            let word = String(transcript[match]).replacingOccurrences(
+                of: "'s", with: "")
+            let ignore = ["my", "our", "their", "his", "her", "its", "your"]
+            if !ignore.contains(word.lowercased()) { return word }
+        }
+
+        // 2. "For" pattern: "passport for John" → "John"
+        if let match = transcript.range(of: #"\bfor\s+(\w+)\s*$"#,
+                                        options: .regularExpression) {
+            return String(transcript[match])
+                .replacingOccurrences(of: "for ", with: "")
+                .trimmingCharacters(in: .whitespaces)
+        }
+
+        // 3. NLTagger: Apple's NLP framework for person name detection
+        let tagger = NLTagger(tagSchemes: [.nameType])
+        tagger.string = transcript
+        var names: [String] = []
+        tagger.enumerateTags(in: transcript.startIndex..<transcript.endIndex,
+                             unit: .word, scheme: .nameType,
+                             options: [.joinNames]) { tag, range in
+            if tag == .personalName {
+                names.append(String(transcript[range]))
+            }
+            return true
+        }
+        return names.first ?? ""
+    }
+
+    // DATE: NSDataDetector with category-aware fallback defaults
+    private func detectDate(in transcript: String,
+                            category: ReminderCategory) -> (Date, Bool) {
+        let detector = try? NSDataDetector(types: NSTextCheckingResult
+                                                    .CheckingType.date.rawValue)
+        let matches = detector?.matches(in: transcript,
+                                        range: NSRange(transcript.startIndex...,
+                                                       in: transcript))
+        if let date = matches?.first?.date, date > Date() {
+            return (date, false)  // Explicit date found
+        }
+        // Category-aware defaults when no date detected
+        let fallbacks: [ReminderCategory: Int] = [
+            .passport: 60, .visa: 60,           // 5 years in months
+            .drivingLicence: 36, .insurance: 36, // 3 years
+            .birthday: 12, .anniversary: 12,     // 1 year
+            .medicalAppointment: 1, .vaccine: 1, // 1 month
+        ]
+        let months = fallbacks[category] ?? 1
+        let date = Calendar.current.date(byAdding: .month,
+                                         value: months, to: Date())!
+        return (date, true)  // Inferred — UI will show warning
+    }
+}</code></pre>
+        </div>
+
+        <div class="callout callout-insight">
+          <div class="callout-label">The Parsing Pipeline's Secret Weapon</div>
+          <p>The <code>dateWasInferred</code> boolean is a critical UX detail. When the parser can't find a date in the transcript, it uses a category-specific default (passport → 5 years, birthday → 1 year, vaccine → 1 month) and flags the date as inferred. The confirmation screen then shows a yellow banner: <em>"I couldn't catch the date — please set it above."</em> This turns a potentially wrong guess into a prompt for user correction. AI-generated, human-verified.</p>
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- 5. DEEP DIVE: NOTIFICATIONS     -->
+        <!-- ============================== -->
+
+        <h2>4. Deep Dive: The Smart Notification Engine</h2>
+
+        <p>
+          The notification system is where LifeReminders diverges most sharply from generic reminder apps. Instead of "remind me at 9 AM on June 1st," the app schedules <strong>multiple notifications at progressively shorter intervals</strong> based on the category's natural urgency curve, with five distinct scheduling rules that handle edge cases no user would think to configure.
+        </p>
+
+        <h3>Category-Aware Default Alert Schedules</h3>
+
+        <p>
+          Each of the 74 categories comes with a pre-configured alert schedule. The schedules are tuned to the natural "action window" for each type of event:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Category Tier</th>
+                <th>First Alert</th>
+                <th>Example Categories</th>
+                <th>Full Schedule</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Monthly</strong></td>
+                <td>3 days before</td>
+                <td>Bills, Loans, House Cleaning</td>
+                <td>3d, 1d, day-of</td>
+              </tr>
+              <tr>
+                <td><strong>Quarterly</strong></td>
+                <td>2 weeks before</td>
+                <td>Oil Change, Air Filter, Tire Rotation</td>
+                <td>14d, 7d, 1d, day-of</td>
+              </tr>
+              <tr>
+                <td><strong>Semi-Annual</strong></td>
+                <td>1 month before</td>
+                <td>Car Service, HVAC, Smoke Detector</td>
+                <td>30d, 14d, 7d, 1d</td>
+              </tr>
+              <tr>
+                <td><strong>Yearly</strong></td>
+                <td>3 months before</td>
+                <td>Insurance, Tax, Car Registration</td>
+                <td>90d, 30d, 7d, 1d, day-of</td>
+              </tr>
+              <tr>
+                <td><strong>Multi-Year</strong></td>
+                <td>6 months before</td>
+                <td>Driving Licence, Credit Card</td>
+                <td>180d, 90d, 30d, 7d, 1d</td>
+              </tr>
+              <tr>
+                <td><strong>5–10 Year</strong></td>
+                <td>1 year before</td>
+                <td>Passport, Will, Child Passport</td>
+                <td>365d, 180d, 90d, 30d, 7d, day-of</td>
+              </tr>
+              <tr>
+                <td><strong>Time-Precise</strong></td>
+                <td>30 minutes before</td>
+                <td>Classes, Medical Appointments</td>
+                <td>30min, 15min (minute-precision alerts)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Five Scheduling Rules</h3>
+
+        <p>
+          Beyond the basic alert schedule, the <code>NotificationManager</code> implements five rules that handle subtle timing scenarios:
+        </p>
+
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-lang">Swift</span>
+            <button class="code-copy" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('code').textContent)">Copy</button>
+          </div>
+          <pre><code class="language-swift">func schedule(reminder: Reminder) {
+    cancel(reminder: reminder)  // Clear all existing notifications
+
+    // RULE 1: Day-of morning override
+    // "Your passport expires today" at 8 PM is useless.
+    // For all-day reminders, cap the day-of alert at 9 AM.
+    if alert.offsetDays == 0 && !reminder.hasTimeOfDay {
+        let cappedHour = min(defaultHour, 9)
+        fireDate = calendar.date(bySettingHour: cappedHour,
+                                 minute: 0, second: 0, of: fireDate)!
+    }
+
+    // RULE 2: Early-bird preparation
+    // For events before 7 AM (dog walk at 5 AM, airport at 1 AM),
+    // add a "heads up" notification at 8 PM the previous evening.
+    if reminder.hasTimeOfDay {
+        let eventHour = calendar.component(.hour, from: targetDate)
+        if eventHour < 7 {
+            let previousDay = calendar.date(byAdding: .day,
+                                            value: -1, to: targetDate)!
+            let prepFireDate = calendar.date(bySettingHour: 20,
+                                             minute: 0, second: 0,
+                                             of: previousDay)!
+            scheduleNotification(
+                id: "earlybird-\(reminder.id)",
+                title: "🌙 Tomorrow early: \(reminder.displayTitle)",
+                body: "\(title) is at \(timeStr) tomorrow morning."
+            )
+        }
+    }
+
+    // RULE 3: Evening tomorrow preview
+    // If user's default alert time is 5 PM+, show a preview at
+    // that time for reminders due tomorrow.
+    if defaultHour >= 17 && isDueTomorrow {
+        scheduleNotification(
+            id: "preview-\(reminder.id)",
+            title: "📋 Tomorrow: \(reminder.displayTitle)",
+            body: "\(title) is due tomorrow. Plan ahead tonight."
+        )
+    }
+
+    // RULE 4: Overdue nag alerts
+    // Daily "still overdue" notifications for up to 30 days.
+    // Caps at 7 notifications per reminder (iOS budget: 64 total).
+    scheduleOverdueAlerts(for: reminder)
+
+    // RULE 5: Notification actions
+    // Lock screen buttons: "Mark as Handled", "Remind in 1 Week",
+    // "Remind in 1 Month" — actionable without opening the app.
+    content.categoryIdentifier = "REMINDER_ACTIONS"
+}</code></pre>
+        </div>
+
+        <div class="callout callout-data">
+          <div class="callout-label">iOS Notification Budget</div>
+          <p>iOS caps each app at <strong>64 pending notifications</strong>. With potentially hundreds of reminders, each with 5–6 scheduled alerts, budget management is critical. The overdue nag system caps at 7 notifications per reminder and the <code>syncAll()</code> method prioritizes alerts by urgency, ensuring the closest deadlines always get notification slots first.</p>
+        </div>
+
+        <h3>Notification Actions: Act Without Opening the App</h3>
+
+        <p>
+          Three lock-screen actions make the app functional from notifications alone:
+        </p>
+
+        <ul>
+          <li><strong>Mark as Handled</strong> — Completes the reminder. If it's recurring (birthday, oil change), it automatically advances to the next occurrence and reschedules all alerts. One tap, zero UI.</li>
+          <li><strong>Remind in 1 Week</strong> — Snoozes the reminder by shifting the target date 7 days forward. Useful for "I know, I'll handle it next week" without dismissing it.</li>
+          <li><strong>Remind in 1 Month</strong> — Same as above, 30-day snooze. Perfect for "I need to renew this but not right now."</li>
+        </ul>
+
+        <p>
+          The action handling flows through a custom <code>NotificationCenter</code> publisher (not the system notification center) that the ContentView listens to. This decouples the notification delegate from the view layer — the delegate posts a message, and any view that cares can react.
+        </p>
+
+
+        <!-- ============================== -->
+        <!-- 6. THE AI DEVELOPMENT PROCESS   -->
+        <!-- ============================== -->
+
+        <h2>5. The AI-Assisted Development Process</h2>
+
+        <p>
+          Here's where this essay gets personal. I used an AI coding agent — specifically Claude — as my primary development partner for this project. Not for generating boilerplate. For <em>architecture decisions, edge case handling, platform-specific API knowledge, and accelerating the tedious parts</em>.
+        </p>
+
+        <div class="pull-quote">
+          <p>"AI didn't replace the engineering. It compressed the time between having an idea and having a working implementation from hours to minutes."</p>
+        </div>
+
+        <h3>Where AI Added Genuine Leverage</h3>
+
+        <div class="property-grid">
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(52,211,153,0.1);">🏗️</div>
+            <div class="prop-title">API Surface Knowledge</div>
+            <div class="prop-desc">SFSpeechRecognizer, UNUserNotificationCenter, ActivityKit, StoreKit 2 — each has a large API surface. AI knew the correct method signatures, required capabilities, and Info.plist keys without me reading docs.</div>
+          </div>
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(167,139,250,0.1);">⚡</div>
+            <div class="prop-title">Boilerplate Velocity</div>
+            <div class="prop-desc">74 category enum cases, each with 8 properties (displayName, sfSymbol, color, defaults). AI generated this in one pass. By hand, that's a day of tedious typing. With AI, 10 minutes plus review.</div>
+          </div>
+          <div class="property-card">
+            <div class="prop-icon" style="background: rgba(251,146,60,0.1);">🐛</div>
+            <div class="prop-title">Edge Case Anticipation</div>
+            <div class="prop-desc">The early-bird notification rule (events before 7 AM), the overdue nag budget cap, the silence timer calibration — AI suggested these from experience patterns, not from me hitting the bug first.</div>
+          </div>
+        </div>
+
+        <h3>Where AI Required Heavy Correction</h3>
+
+        <p>
+          It wasn't all smooth. Here's where the AI agent got things wrong and I had to course-correct:
+        </p>
+
+        <ul>
+          <li><strong>SwiftData relationship semantics:</strong> AI initially generated CoreData-style <code>@Relationship</code> annotations that didn't match SwiftData's actual API. SwiftData is new enough (iOS 17) that the model's training data has limited examples. I had to reference Apple's WWDC23 sessions directly and correct the generated code.</li>
+          <li><strong>Notification scheduling timing bugs:</strong> The first version of the notification manager didn't account for the edge case where a user creates a reminder with a day-of alert and the alert time is already past. AI scheduled a notification for <em>today at 9 AM</em> when it was already 3 PM — iOS silently drops these. I added the <code>fireDate > now</code> guard.</li>
+          <li><strong>Audio session category conflicts:</strong> On macOS, <code>AVAudioSession</code> doesn't exist — it's iOS-only. AI generated code that compiled on iOS but crashed on macOS. I added <code>#if os(iOS)</code> conditional compilation blocks for platform-specific audio handling.</li>
+          <li><strong>Over-architecture:</strong> AI's first pass at the notification system used a protocol-oriented design with <code>NotificationStrategy</code>, <code>AlertScheduler</code>, and <code>NotificationContent</code> abstractions. Three protocols, five conforming types, for what turned out to be a 200-line singleton. I collapsed it to a single class. The simplest architecture that works.</li>
+        </ul>
+
+        <div class="callout callout-warning">
+          <div class="callout-label">The Biggest Lesson</div>
+          <p>AI is extraordinarily good at generating <em>plausible</em> code that compiles and looks correct. It's less good at generating code that handles <strong>temporal edge cases</strong> — when "now" matters, when ordering matters, when the difference between "today at 9 AM" and "tomorrow at 9 AM" determines whether a notification fires or silently vanishes. Every time-sensitive code path needed manual review.</p>
+        </div>
+
+        <h3>The Two-Week Timeline</h3>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-day">Days 1–2</div>
+            <div class="timeline-title">Data model + category system</div>
+            <div class="timeline-desc">Designed Reminder, ScheduledAlert, FamilyMember models. Built the 74-category enum with all defaults. AI generated the category metadata; I reviewed and tuned alert schedules.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-day">Days 3–4</div>
+            <div class="timeline-title">Core views + Dashboard</div>
+            <div class="timeline-desc">DashboardView with urgency grouping, ReminderCardView with swipe actions, ContentView with adaptive layout (TabView on iPhone, NavigationSplitView on iPad). AI scaffolded the views; I refined spacing, colors, and interaction patterns.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-day">Days 5–6</div>
+            <div class="timeline-title">Notification engine</div>
+            <div class="timeline-desc">NotificationManager with all five scheduling rules. Permission flow, overdue nag system, notification actions. This was the most iteration-heavy phase — timing edge cases required multiple rounds of testing and correction.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-day">Days 7–8</div>
+            <div class="timeline-title">Voice input + NLP parsing</div>
+            <div class="timeline-desc">VoiceInputManager (SFSpeechRecognizer + AVAudioEngine), ReminderParser (category detection, date extraction, person name parsing), VoiceAddView confirmation screen. The NLP pipeline came together faster than expected — Apple's on-device APIs are well-designed.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-day">Days 9–10</div>
+            <div class="timeline-title">Quick Add + Detail views + Family management</div>
+            <div class="timeline-desc">QuickAddView 2-step form, ReminderDetailView with edit mode, FamilyView with member management and per-person reminder views. AlertScheduleEditorView for custom notification scheduling.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-day">Days 11–12</div>
+            <div class="timeline-title">Platform targets + monetization</div>
+            <div class="timeline-desc">macOS target (MenuBarExtra system tray), watchOS target (simplified view), Live Activity widget, StoreKit 2 Pro purchase, TierManager (Free/Ad-Supported/Pro), Google AdMob integration, CategoryLocalization for 6 regions.</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-day">Days 13–14</div>
+            <div class="timeline-title">Polish, testing, App Store submission</div>
+            <div class="timeline-desc">Onboarding flow, Settings view with stats, completed reminders archive, accessibility audit (VoiceOver labels, Dynamic Type, touch targets), App Store screenshots, metadata, and submission.</div>
+          </div>
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- 7. WHAT I'D DO DIFFERENTLY      -->
+        <!-- ============================== -->
+
+        <h2>6. Tradeoffs and What I'd Do Differently</h2>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Decision</th>
+                <th>What I Did</th>
+                <th>What I'd Change</th>
+                <th>Why</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Persistence</strong></td>
+                <td>SwiftData (iOS 17+)</td>
+                <td>Keep SwiftData</td>
+                <td>iOS 17 minimum is acceptable in 2026. SwiftData + CloudKit sync with zero server code is too valuable to give up.</td>
+              </tr>
+              <tr>
+                <td><strong>NLP parsing</strong></td>
+                <td>Keyword matching + NSDataDetector + NLTagger</td>
+                <td>Add on-device LLM fallback</td>
+                <td>Keyword matching breaks on unexpected phrasings. Apple's Foundation Models (iOS 26) would handle "my car needs its yearly checkup" → Oil Change without explicit keywords.</td>
+              </tr>
+              <tr>
+                <td><strong>Category system</strong></td>
+                <td>74-case enum with hard-coded metadata</td>
+                <td>Data-driven categories from a JSON file</td>
+                <td>Adding a category currently requires recompilation. A JSON config would allow OTA category updates.</td>
+              </tr>
+              <tr>
+                <td><strong>Tier system</strong></td>
+                <td>3 tiers (Free/Ad/Pro) with soft limits</td>
+                <td>Start with 2 tiers (Free/Pro)</td>
+                <td>The ad tier adds complexity (AdMob SDK is the only external dependency) for marginal revenue. I'd simplify to free + Pro.</td>
+              </tr>
+              <tr>
+                <td><strong>AI collaboration</strong></td>
+                <td>AI generated initial code, I reviewed and fixed</td>
+                <td>More upfront architecture docs before generating</td>
+                <td>When I gave AI a clear spec ("build NotificationManager with these 5 rules"), the output was excellent. When I said "build a notification system," it over-architected. Specificity in prompts matters enormously.</td>
+              </tr>
+              <tr>
+                <td><strong>Testing</strong></td>
+                <td>Manual testing only (time pressure)</td>
+                <td>Add unit tests for ReminderParser and date logic</td>
+                <td>The NLP parsing and effectiveDate computation are pure functions — perfect for unit testing. This is technical debt I'm paying interest on now.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+
+        <!-- ============================== -->
+        <!-- 8. PRODUCTION LESSONS           -->
+        <!-- ============================== -->
+
+        <h2>7. Production Lessons: What Matters When You Ship</h2>
+
+        <h3>Privacy as Architecture</h3>
+
+        <p>
+          LifeReminders stores deeply personal information — passport numbers, medical appointments, family member details. The architectural response: <strong>there is no server</strong>. All data lives on-device in SwiftData. Voice recognition runs on-device with <code>requiresOnDeviceRecognition = true</code>. CloudKit sync for Pro users uses Apple's private database — the developer literally cannot read user data. No analytics, no crash reporting, no telemetry. Privacy isn't a policy; it's an architectural constraint enforced by the absence of any network endpoint.
+        </p>
+
+        <h3>Notification Budget Management</h3>
+
+        <p>
+          iOS allows 64 pending notifications per app. A user with 30 reminders, each with 5 alert offsets, needs 150 notification slots. That's 2.3x the budget. The solution: <code>syncAll()</code> runs on every app foreground transition and prioritizes by urgency. Overdue and this-week reminders get full alert schedules. Reminders 6+ months out get only their earliest alert. The budget is managed dynamically, not statically.
+        </p>
+
+        <h3>Region-Aware Intelligence</h3>
+
+        <p>
+          <code>CategoryLocalization</code> detects the user's region from <code>Locale.current.region?.identifier</code> and adjusts both <strong>which categories are visible</strong> and <strong>what they're called</strong>. A user in India sees PAN Card, Aadhaar, and PUC Certificate. A user in the UK sees MOT Test and TV Licence. A user in Germany sees TUV Inspection and Rundfunkbeitrag. The categories are always there in the enum — but the UI surfaces only what's relevant. This was one area where AI's knowledge of international administrative systems was genuinely useful; I wouldn't have known about Ramonage (mandatory chimney sweeping in France) without it.
+        </p>
+
+
+        <!-- ============================== -->
+        <!-- 9. CONCLUSION                   -->
+        <!-- ============================== -->
+
+        <h2>8. Conclusion: The New Speed of Software</h2>
+
+        <p>
+          Two weeks. 36 files. 74 categories. Five notification rules. On-device NLP. Multi-platform. Zero dependencies. Would I have shipped this in two weeks without AI? No. Two months, maybe. The AI agent didn't make me a better engineer — it made me a <em>faster</em> one. It handled the breadth (74 categories of metadata, platform-specific API incantations, boilerplate views) while I handled the depth (notification timing edge cases, the NLP parsing pipeline design, the data model's computed property architecture).
+        </p>
+
+        <div class="pull-quote">
+          <p>"The skill that matters now isn't writing code — it's knowing what code to write. AI handles the syntax. You handle the semantics."</p>
+        </div>
+
+        <p>
+          The most surprising takeaway: AI was weakest where I expected it to be strongest (novel API usage for SwiftData, temporal edge cases) and strongest where I expected it to be weakest (domain knowledge about 74 categories across 6 countries, boilerplate generation at scale, anticipating UX edge cases like the silence timer calibration). The future of software development isn't AI replacing engineers. It's engineers with AI building in weeks what used to take months — and spending their reclaimed time on the design decisions that actually matter.
+        </p>
+
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="article-footer">
+        <div class="author-bio-card">
+          <div class="bio-avatar">SJ</div>
+          <div>
+            <div class="bio-name">Sushant Joshi</div>
+            <div class="bio-desc">
+              Principal Engineer building agentic AI systems. This is part of the
+              <a href="../">Neural Blueprints</a> series — deeply researched system design essays
+              on real-world Agentic AI.
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/swift.min.js" defer></script>
+  <script>document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());</script>
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const sidebar   = document.getElementById('sidebar');
+    const overlay   = document.getElementById('overlay');
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('visible');
+    }
+    hamburger.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+  </script>
+</body>
+</html>
