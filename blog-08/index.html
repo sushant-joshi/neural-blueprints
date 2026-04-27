@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills, Rules, Hooks, MCPs, Plugins: The Same Problem, Five Different Answers — Neural Blueprints</title>
+  <meta name="description" content="One example — GitHub integration — implemented as a Rule, a Skill, a Hook, an MCP server, and a Plugin. A clear-eyed comparison of the five extension mechanisms in AI coding agents, including cross-platform equivalents in OpenAI, Gemini, and Copilot.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <style>
+    :root {
+      --bg-body:#F7F6F3;--bg-sidebar:#1A1D23;--bg-card:#FFFFFF;
+      --bg-callout-insight:#EEF2FF;--bg-callout-warn:#FFFBEB;--bg-callout-code:#ECFDF5;--bg-callout-data:#EFF6FF;
+      --text-primary:#0F1117;--text-secondary:#4A5568;--text-sidebar:#E2E8F0;--text-sidebar-muted:#718096;--text-sidebar-active:#FFFFFF;
+      --accent:#5B63FE;--accent-hover:#4348D4;--accent-subtle:#EEF2FF;
+      --border:#E2E8F0;--border-strong:#CBD5E1;
+      --text-xs:0.75rem;--text-sm:0.875rem;--text-base:1rem;--text-lg:1.125rem;--text-xl:1.25rem;--text-2xl:1.5rem;--text-3xl:1.875rem;--text-4xl:2.25rem;
+      --sidebar-width:280px;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{font-size:16px;scroll-behavior:smooth}
+    body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-body);color:var(--text-primary);line-height:1.6;min-height:100vh}
+    a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-hover);text-decoration:underline}
+    .layout{display:grid;grid-template-columns:var(--sidebar-width) 1fr;min-height:100vh}
+    .sidebar{background:var(--bg-sidebar);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;scrollbar-width:thin;scrollbar-color:#2D3748 transparent}
+    .sidebar::-webkit-scrollbar{width:4px}.sidebar::-webkit-scrollbar-thumb{background:#2D3748;border-radius:2px}
+    .sidebar-brand{display:flex;align-items:center;gap:12px;padding:28px 20px 24px;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .brand-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .brand-icon svg{width:20px;height:20px;fill:none;stroke:white;stroke-width:2;stroke-linecap:round}
+    .brand-name{font-size:var(--text-sm);font-weight:700;color:var(--text-sidebar);letter-spacing:-0.01em}
+    .brand-tagline{font-size:var(--text-xs);color:var(--text-sidebar-muted);margin-top:2px}
+    .nav-section{padding:20px 12px 8px;flex:1}
+    .nav-section-label{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-sidebar-muted);padding:0 8px;margin-bottom:6px}
+    .nav-item{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border-radius:6px;text-decoration:none;margin-bottom:2px;transition:background 0.15s;border-left:3px solid transparent}
+    .nav-item:hover{background:rgba(255,255,255,0.06);text-decoration:none}
+    .nav-item.active{border-left-color:var(--accent);background:rgba(91,99,254,0.12)}
+    .nav-item.active .nav-item-number,.nav-item.active .nav-item-title{color:var(--text-sidebar-active)}
+    .nav-item-number{font-size:var(--text-xs);font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text-sidebar-muted);flex-shrink:0;padding-top:1px}
+    .nav-item-title{font-size:var(--text-sm);font-weight:500;color:var(--text-sidebar-muted);line-height:1.4}
+    .sidebar-footer{padding:16px 20px 20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;gap:16px}
+    .sidebar-footer a{font-size:var(--text-xs);color:var(--text-sidebar-muted);text-decoration:none;font-weight:500;transition:color 0.15s}
+    .sidebar-footer a:hover{color:var(--text-sidebar)}
+    .article-wrapper{padding:56px 72px 80px}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:var(--text-sm);font-weight:500;color:var(--text-secondary);text-decoration:none;margin-bottom:40px;transition:color 0.15s}
+    .back-link:hover{color:var(--accent);text-decoration:none}
+    .article-header{max-width:720px;margin-bottom:56px;padding-bottom:40px;border-bottom:1px solid var(--border)}
+    .article-meta-top{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+    .post-number-badge{font-size:var(--text-xs);font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text-secondary);background:#F1F5F9;padding:3px 8px;border-radius:4px}
+    .tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+    .tag-tools{background:rgba(96,165,250,0.12);color:#2563EB}
+    .tag-arch{background:rgba(167,139,250,0.12);color:#7C3AED}
+    .tag-compare{background:rgba(251,146,60,0.12);color:#EA580C}
+    .article-title{font-size:var(--text-4xl);font-weight:900;line-height:1.15;letter-spacing:-0.03em;color:var(--text-primary);margin-bottom:20px}
+    .article-subtitle{font-size:var(--text-lg);color:var(--text-secondary);line-height:1.75;margin-bottom:28px}
+    .article-meta-bottom{display:flex;align-items:center;gap:20px}
+    .author-info{display:flex;align-items:center;gap:10px}
+    .author-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:var(--text-sm);font-weight:700;color:white;flex-shrink:0}
+    .author-name{font-size:var(--text-sm);font-weight:600;color:var(--text-primary)}
+    .author-role{font-size:var(--text-xs);color:var(--text-secondary)}
+    .meta-divider{color:var(--border-strong)}
+    .article-date-time{font-size:var(--text-sm);color:var(--text-secondary)}
+    .article-body{max-width:720px;font-size:var(--text-base);line-height:1.8;color:var(--text-primary)}
+    .article-body p{margin-bottom:1.4em}
+    .article-body p.lead{font-size:var(--text-lg);line-height:1.9;color:var(--text-secondary);margin-bottom:1.6em}
+    .article-body h2{font-size:var(--text-2xl);font-weight:700;letter-spacing:-0.02em;color:var(--text-primary);margin-top:3.5rem;margin-bottom:1rem;padding-bottom:0.6rem;border-bottom:1px solid var(--border)}
+    .article-body h3{font-size:var(--text-xl);font-weight:600;letter-spacing:-0.01em;color:var(--text-primary);margin-top:2.2rem;margin-bottom:0.7rem}
+    .article-body ul,.article-body ol{margin-left:1.5em;margin-bottom:1.4em}
+    .article-body li{margin-bottom:0.4em}
+    .article-body strong{font-weight:600}
+    .article-body code{font-family:'JetBrains Mono',monospace;font-size:0.875em;background:#F1F5F9;padding:2px 6px;border-radius:4px;color:#047857}
+    .pull-quote{border-left:4px solid var(--accent);padding:20px 28px;margin:2rem 0;background:var(--accent-subtle);border-radius:0 8px 8px 0}
+    .pull-quote p{font-size:var(--text-xl);font-weight:500;font-style:italic;line-height:1.5;color:var(--text-primary);margin:0}
+    .callout{border-radius:0 8px 8px 0;padding:16px 20px;margin:1.6rem 0}
+    .callout-label{font-size:var(--text-xs);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
+    .callout p,.callout ul{margin-bottom:0;font-size:var(--text-sm);line-height:1.65}
+    .callout-insight{border-left:4px solid var(--accent);background:var(--bg-callout-insight)}.callout-insight .callout-label{color:var(--accent)}
+    .callout-warning{border-left:4px solid #F59E0B;background:var(--bg-callout-warn)}.callout-warning .callout-label{color:#D97706}
+    .callout-code{border-left:4px solid #34D399;background:var(--bg-callout-code)}.callout-code .callout-label{color:#059669}
+    .callout-data{border-left:4px solid #60A5FA;background:var(--bg-callout-data)}.callout-data .callout-label{color:#2563EB}
+    .scenario-box{background:var(--bg-sidebar);color:var(--text-sidebar);border-radius:10px;padding:28px 32px;margin:2rem 0}
+    .scenario-box .scenario-label{font-size:var(--text-xs);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#60A5FA;margin-bottom:12px}
+    .scenario-box p{font-size:var(--text-sm);line-height:1.75;color:#CBD5E1;margin-bottom:0.8em}
+    .scenario-box p:last-child{margin-bottom:0}
+    .data-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:2rem 0}
+    .data-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center}
+    .data-card .data-number{font-size:var(--text-3xl);font-weight:900;letter-spacing:-0.03em;color:var(--accent);line-height:1;margin-bottom:6px}
+    .data-card .data-label{font-size:var(--text-xs);color:var(--text-secondary);font-weight:500;line-height:1.4}
+    .table-wrapper{overflow-x:auto;margin:1.8rem 0;border-radius:8px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:collapse;font-size:var(--text-sm)}
+    thead tr{background:var(--bg-sidebar);color:var(--text-sidebar)}
+    thead th{padding:12px 16px;text-align:left;font-weight:600;font-size:var(--text-xs);letter-spacing:0.05em;text-transform:uppercase}
+    tbody tr:nth-child(even){background:#F8FAFC}tbody tr:nth-child(odd){background:var(--bg-card)}
+    tbody td{padding:12px 16px;color:var(--text-primary);line-height:1.5;border-top:1px solid var(--border);vertical-align:top}
+    .diagram-section{margin:2.5rem 0}
+    .diagram-title{font-size:var(--text-sm);font-weight:600;color:var(--text-secondary);text-align:center;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em}
+    .diagram-container{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px;overflow-x:auto}
+    .diagram-container svg{display:block;max-width:100%;height:auto;margin:0 auto}
+    .diagram-caption{font-size:var(--text-xs);color:var(--text-secondary);text-align:center;margin-top:12px;font-style:italic}
+    .article-footer{max-width:720px;margin-top:64px;padding-top:40px;border-top:1px solid var(--border)}
+    .author-bio-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:24px 28px;display:flex;gap:20px;align-items:flex-start}
+    .bio-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#A78BFA);display:flex;align-items:center;justify-content:center;font-size:var(--text-lg);font-weight:700;color:white;flex-shrink:0}
+    .bio-name{font-size:var(--text-base);font-weight:700;color:var(--text-primary);margin-bottom:4px}
+    .bio-desc{font-size:var(--text-sm);color:var(--text-secondary);line-height:1.6}
+    .mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:56px;background:var(--bg-sidebar);align-items:center;justify-content:space-between;padding:0 20px;z-index:100;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .mobile-brand{font-size:var(--text-sm);font-weight:700;color:var(--text-sidebar)}
+    .hamburger{background:none;border:none;cursor:pointer;padding:4px;display:flex;flex-direction:column;gap:5px}
+    .hamburger span{display:block;width:22px;height:2px;background:var(--text-sidebar);border-radius:1px}
+    .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99}
+    @media(max-width:767px){.mobile-header{display:flex}.layout{grid-template-columns:1fr;padding-top:56px}.sidebar{position:fixed;top:56px;left:0;height:calc(100vh - 56px);z-index:100;transform:translateX(-100%);transition:transform 0.25s ease;width:var(--sidebar-width)}.sidebar.open{transform:translateX(0)}.sidebar-overlay.visible{display:block}.article-wrapper{padding:28px 20px 60px}.article-title{font-size:var(--text-3xl)}.data-cards{grid-template-columns:1fr}}
+    @media(min-width:768px) and (max-width:1024px){:root{--sidebar-width:240px}.article-wrapper{padding:48px 40px}}
+  </style>
+</head>
+<body>
+  <header class="mobile-header"><span class="mobile-brand">Neural Blueprints</span><button class="hamburger" id="hamburger" aria-label="Toggle navigation"><span></span><span></span><span></span></button></header>
+  <div class="sidebar-overlay" id="overlay"></div>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-brand"><div class="brand-icon"><svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><polyline points="12 2 2 7 12 12 22 7 12 2"></polyline><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg></div><div><div class="brand-name">Neural Blueprints</div><div class="brand-tagline">Sushant Joshi · AI Systems</div></div></div>
+      <div class="nav-section">
+        <div class="nav-section-label">Agentic AI</div>
+        <a class="nav-item active" href="../blog-08/"><span class="nav-item-number">08</span><span class="nav-item-title">Skills, Rules, Hooks, MCPs</span></a>
+        <a class="nav-item" href="../blog-07/"><span class="nav-item-number">07</span><span class="nav-item-title">Inside Claude Code</span></a>
+        <a class="nav-item" href="../blog-06/"><span class="nav-item-number">06</span><span class="nav-item-title">Shipping an App with AI</span></a>
+        <a class="nav-item" href="../blog-05/"><span class="nav-item-number">05</span><span class="nav-item-title">Agentic Memory Architecture</span></a>
+        <a class="nav-item" href="../blog-04/"><span class="nav-item-number">04</span><span class="nav-item-title">Autonomous Supply Chain</span></a>
+        <a class="nav-item" href="../blog-03/"><span class="nav-item-number">03</span><span class="nav-item-title">Drug Discovery at Machine Speed</span></a>
+        <a class="nav-item" href="../blog-02/"><span class="nav-item-number">02</span><span class="nav-item-title">Autonomous Security Operations</span></a>
+        <a class="nav-item" href="../blog-01/"><span class="nav-item-number">01</span><span class="nav-item-title">Autonomous Software Engineering</span></a>
+      </div>
+      <div class="sidebar-footer"><a href="https://github.com/sushant-joshi" target="_blank" rel="noopener">GitHub</a><a href="https://linkedin.com/in/sushantnpj" target="_blank" rel="noopener">LinkedIn</a></div>
+    </nav>
+
+    <div class="article-wrapper">
+      <a class="back-link" href="../"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 8H3M7 4L3 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> All Essays</a>
+
+      <header class="article-header">
+        <div class="article-meta-top">
+          <span class="post-number-badge">Essay 08</span>
+          <span class="tag tag-tools">Extension Mechanisms</span>
+          <span class="tag tag-compare">Comparison</span>
+          <span class="tag tag-arch">Architecture</span>
+        </div>
+        <h1 class="article-title">Skills, Rules, Hooks, MCPs, Plugins: The Same Problem, Five Different Answers</h1>
+        <p class="article-subtitle">
+          You want your AI coding agent to work with GitHub — create PRs, enforce conventions, check CI status. Do you write a Rule? A Skill? A Hook? An MCP server? A Plugin? The answer is "all of them, for different reasons." This essay uses one concrete example to cut through the terminology fog and reveal why these mechanisms exist, how they differ, and when each one is the right choice.
+        </p>
+        <div class="article-meta-bottom">
+          <div class="author-info"><div class="author-avatar">SJ</div><div><div class="author-name">Sushant Joshi</div><div class="author-role">Principal Engineer · AI Systems</div></div></div>
+          <span class="meta-divider">·</span>
+          <span class="article-date-time">April 27, 2026 &nbsp;·&nbsp; 26 min read</span>
+        </div>
+      </header>
+
+      <div class="article-body">
+
+        <p class="lead">
+          Every AI coding agent — Claude Code, GitHub Copilot, Cursor, Windsurf, OpenAI Codex — has invented its own vocabulary for extending the agent's capabilities. Rules. Skills. Hooks. MCPs. Plugins. Actions. Custom Instructions. Gems. Extensions. The terminology is a mess, and under the surface, most of these concepts are solving variations of the same five problems. This essay maps the territory by taking a single, concrete integration — <strong>GitHub</strong> — and implementing it five different ways. Not because you should, but because each mechanism handles a fundamentally different aspect of the problem, and understanding <em>which aspect</em> reveals the real architecture beneath the labels.
+        </p>
+
+        <div class="pull-quote">
+          <p>"The confusion isn't that these terms mean different things. It's that they solve different problems that <em>feel</em> like the same problem until you try to implement them."</p>
+        </div>
+
+
+        <h2>1. The Example: "Make My AI Agent Work With GitHub"</h2>
+
+        <p>
+          Here's what most engineers actually want when they say "GitHub integration":
+        </p>
+
+        <ol>
+          <li><strong>Know our conventions</strong> — commit message format, branch naming, PR template, required reviewers</li>
+          <li><strong>Create PRs properly</strong> — with the right title format, body template, labels, and linked issues</li>
+          <li><strong>Never force-push to main</strong> — a hard safety constraint, no exceptions</li>
+          <li><strong>Read issues, check CI status, post comments</strong> — interact with GitHub's API programmatically</li>
+          <li><strong>Auto-label PRs by file path</strong> — when a PR touches <code>src/auth/*</code>, add the "security" label</li>
+        </ol>
+
+        <p>
+          Five requirements. It's tempting to think one mechanism should handle all of them. But each requirement has different characteristics — different answers to questions like: Does it need to be deterministic? Does it need API access? Does it run before or after the AI acts? Is it a suggestion or a hard constraint? Those differences determine which mechanism fits.
+        </p>
+
+        <p>
+          Let's implement each requirement with the mechanism that fits it best, and understand <em>why</em> it fits.
+        </p>
+
+
+        <h2>2. Rules: Persistent Behavioral Constraints</h2>
+
+        <div class="scenario-box">
+          <div class="scenario-label">Requirement #1: Know our conventions</div>
+          <p>"Commit messages must follow Conventional Commits format. Branch names must be feature/JIRA-123-description or fix/JIRA-456-description. PRs must link to an issue. Never commit .env files."</p>
+        </div>
+
+        <p>
+          A <strong>Rule</strong> is a piece of natural language that shapes how the AI behaves — permanently, across every interaction. In Claude Code, rules live in <code>CLAUDE.md</code> files (project root, nested directories, or user-level). In other systems:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Platform</th><th>Equivalent Concept</th><th>Where It Lives</th></tr></thead>
+            <tbody>
+              <tr><td>Claude Code</td><td><code>CLAUDE.md</code></td><td>Project root, nested dirs, <code>~/.claude/CLAUDE.md</code></td></tr>
+              <tr><td>GitHub Copilot</td><td><code>.github/copilot-instructions.md</code></td><td>Repository root</td></tr>
+              <tr><td>Cursor</td><td><code>.cursorrules</code></td><td>Project root</td></tr>
+              <tr><td>ChatGPT</td><td>Custom Instructions / Memory</td><td>User settings (global)</td></tr>
+              <tr><td>Gemini</td><td>Gems (system instructions)</td><td>Per-Gem configuration</td></tr>
+              <tr><td>Windsurf</td><td><code>.windsurfrules</code></td><td>Project root</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Why a Rule Fits Here</h3>
+
+        <p>
+          Conventions are <strong>persistent context</strong>. They don't change between conversations. They apply to every interaction. They're expressed naturally in prose ("use Conventional Commits") rather than code. And critically, they're <em>advisory</em> — the AI should follow them, but enforcement happens elsewhere. A rule that says "never commit .env files" is a strong suggestion to the AI, not a hard technical constraint. The AI can still technically commit .env files if it reasons incorrectly.
+        </p>
+
+        <div class="callout callout-insight">
+          <div class="callout-label">The Key Property of Rules</div>
+          <p>Rules are <strong>loaded into every conversation</strong> without being explicitly invoked. They shape behavior passively. You never type "/apply-conventions" — the AI reads the rules at session start and applies them throughout. This is why rules are the right mechanism for conventions: you want them to be omnipresent background context, not on-demand workflows.</p>
+        </div>
+
+        <h3>What Rules Can't Do</h3>
+
+        <p>
+          Rules can't <em>enforce</em> anything. They're text injected into the system prompt. The model can ignore them (by mistake, not malice). Rules also can't make API calls, run code, or interact with external services. If you need a guarantee, you need a different mechanism.
+        </p>
+
+
+        <h2>3. Skills: On-Demand Prompt Workflows</h2>
+
+        <div class="scenario-box">
+          <div class="scenario-label">Requirement #2: Create PRs properly</div>
+          <p>"When I say '/pr', check the diff against main, write a PR title under 70 characters, generate a body with Summary, Test Plan, and the Neural Blueprints footer, push the branch, and create the PR using gh CLI."</p>
+        </div>
+
+        <p>
+          A <strong>Skill</strong> is a reusable, on-demand prompt template — a detailed instruction set that the AI follows when explicitly invoked. In Claude Code, skills are Markdown files with YAML frontmatter stored in <code>.claude/skills/</code>. The closest analogues in other ecosystems:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Platform</th><th>Equivalent Concept</th><th>Invocation</th></tr></thead>
+            <tbody>
+              <tr><td>Claude Code</td><td>Skills (<code>.claude/skills/*.md</code>)</td><td><code>/skill-name</code> or auto-invoked by model</td></tr>
+              <tr><td>GitHub Copilot</td><td>Prompt files (<code>.github/prompts/*.md</code>)</td><td>Referenced in chat</td></tr>
+              <tr><td>ChatGPT</td><td>GPTs (configured assistants)</td><td>Selecting the GPT</td></tr>
+              <tr><td>Cursor</td><td>Notepads / <code>@command</code></td><td>Referenced in context</td></tr>
+              <tr><td>Gemini</td><td>Gems (with specific workflows)</td><td>Selecting the Gem</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Why a Skill Fits Here</h3>
+
+        <p>
+          PR creation is a <strong>complex, multi-step workflow</strong> that you want to execute the same way every time, but only on demand. You don't want the AI creating PRs unprompted. You want a specific sequence: check diff, format title, write body, push, create. A skill encodes this sequence as a natural language prompt that guides the AI through the steps.
+        </p>
+
+        <p>
+          The critical distinction from a rule: <strong>a skill is invoked explicitly, a rule is always active</strong>. Your PR workflow isn't background context — it's a specific action triggered by a specific command. And it's <em>more detailed</em> than a rule should be: a rule might say "PRs should have a summary and test plan." A skill provides the exact template, the exact command sequence, and the exact formatting.
+        </p>
+
+        <div class="callout callout-code">
+          <div class="callout-label">Skills Are Not Code</div>
+          <p>This is the most common misconception. A skill doesn't execute a procedure — it <strong>tells the AI how to use existing tools</strong> to accomplish a goal. The <code>/pr</code> skill doesn't call <code>gh pr create</code> directly. It instructs Claude to check the diff (using Bash), write the PR body (using reasoning), and create the PR (using Bash with gh). The AI is the executor; the skill is the playbook. This means skills degrade gracefully — if one step fails, the AI can adapt.</p>
+        </div>
+
+        <h3>What Skills Can't Do</h3>
+
+        <p>
+          Skills are fundamentally AI-interpreted instructions. They can't guarantee execution order, can't enforce invariants, and can't run without the AI in the loop. If you need something to happen <em>deterministically, every time, regardless of what the AI thinks</em>, you need a hook.
+        </p>
+
+
+        <h2>4. Hooks: Deterministic Guardrails</h2>
+
+        <div class="scenario-box">
+          <div class="scenario-label">Requirement #3: Never force-push to main</div>
+          <p>"If the AI attempts to run git push --force to main or master, block it. No exceptions. No AI judgment. Hard stop."</p>
+        </div>
+
+        <p>
+          A <strong>Hook</strong> is a shell script that executes at a specific point in the agent's lifecycle — before a tool runs (<code>preToolUse</code>), after it runs (<code>postToolUse</code>), at session start, or at session end. Hooks are <em>deterministic</em>: they run real code, not prompts. They can't be persuaded, hallucinated around, or ignored.
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Platform</th><th>Equivalent Concept</th><th>Mechanism</th></tr></thead>
+            <tbody>
+              <tr><td>Claude Code</td><td>Hooks (preToolUse / postToolUse)</td><td>Shell scripts in settings.json</td></tr>
+              <tr><td>GitHub Copilot</td><td>Content Exclusion + Firewall policies</td><td>Organization admin settings</td></tr>
+              <tr><td>Cursor</td><td>No direct equivalent</td><td>—</td></tr>
+              <tr><td>OpenAI Codex</td><td>Sandbox restrictions</td><td>Container-level enforcement</td></tr>
+              <tr><td>Git (native)</td><td>Git hooks (pre-push, pre-commit)</td><td>Shell scripts in .git/hooks/</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Why a Hook Fits Here</h3>
+
+        <p>
+          "Never force-push to main" is not a suggestion. It's not context. It's not a workflow. It's a <strong>hard safety constraint</strong> that must be enforced deterministically. A rule can say "don't force-push to main" — but the AI might still do it if it reasons (incorrectly) that an exception is warranted. A hook doesn't reason. It pattern-matches the command, and if it matches <code>git push --force</code> targeting <code>main</code>, it returns exit code 2 and the tool call is blocked. Period.
+        </p>
+
+        <div class="pull-quote">
+          <p>"Rules are suggestions to an intelligence. Hooks are laws of physics. Both are necessary, and confusing them is the most common architectural mistake in agentic systems."</p>
+        </div>
+
+        <h3>The Rule-Hook Spectrum</h3>
+
+        <p>
+          This is the deepest insight in this entire essay. Rules and hooks exist on a spectrum of <strong>determinism</strong>:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Property</th><th>Rule (CLAUDE.md)</th><th>Hook (Shell Script)</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Enforcement</strong></td><td>Advisory — model may not comply</td><td>Absolute — code-level enforcement</td></tr>
+              <tr><td><strong>Flexibility</strong></td><td>High — model can adapt to context</td><td>Low — pattern match only</td></tr>
+              <tr><td><strong>Expressiveness</strong></td><td>Natural language, nuanced</td><td>Regex/glob, binary yes/no</td></tr>
+              <tr><td><strong>When to use</strong></td><td>Conventions, preferences, style</td><td>Safety constraints, compliance, audit</td></tr>
+              <tr><td><strong>Failure mode</strong></td><td>Model ignores rule (soft failure)</td><td>False positive blocks valid action (hard failure)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          "Use Conventional Commits" → Rule. The model should follow the convention, but if a commit message is slightly non-standard, it's not catastrophic. "Never delete the production database" → Hook. You cannot afford the model getting this wrong even once. The cost of a false positive (blocking a legitimate action) is always less than the cost of a false negative (letting a dangerous action through).
+        </p>
+
+
+        <h2>5. MCPs: Structured API Access</h2>
+
+        <div class="scenario-box">
+          <div class="scenario-label">Requirement #4: Read issues, check CI status, post comments</div>
+          <p>"I need the AI to query open GitHub issues, read pull request reviews, check the status of CI checks, and post comments — all through the GitHub API with proper authentication."</p>
+        </div>
+
+        <p>
+          An <strong>MCP server</strong> (Model Context Protocol) is a standalone process that exposes tools to the AI agent through a standardized JSON-RPC 2.0 protocol. Unlike rules (text), skills (prompts), or hooks (shell scripts), an MCP server provides <strong>structured, typed, authenticated access to external systems</strong>.
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Platform</th><th>Equivalent Concept</th><th>Protocol</th></tr></thead>
+            <tbody>
+              <tr><td>Claude Code</td><td>MCP Servers</td><td>JSON-RPC 2.0 over stdio/SSE</td></tr>
+              <tr><td>ChatGPT</td><td>Actions (in GPTs)</td><td>OpenAPI spec → HTTP calls</td></tr>
+              <tr><td>GitHub Copilot</td><td>Extensions / MCP support (2026)</td><td>Copilot Extension API / MCP</td></tr>
+              <tr><td>Gemini</td><td>Extensions (Google-provided)</td><td>Google's proprietary extension API</td></tr>
+              <tr><td>OpenAI Codex</td><td>MCP support (adopted 2025)</td><td>MCP (same protocol as Claude)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Why an MCP Server Fits Here</h3>
+
+        <p>
+          GitHub's API requires authentication (tokens), returns structured data (JSON), has rate limits, has complex error handling, and has dozens of endpoints. This is fundamentally different from the other three requirements:
+        </p>
+
+        <ul>
+          <li><strong>Can't be a rule</strong> — rules can't make API calls</li>
+          <li><strong>Can't be a skill</strong> — skills can guide the AI to use <code>curl</code> or <code>gh</code> CLI, but they can't handle token management, pagination, error codes, or rate limiting in a structured way</li>
+          <li><strong>Can't be a hook</strong> — hooks run at tool-call boundaries, not as tools themselves</li>
+          <li><strong>Must be an MCP</strong> — provides typed tools with JSON Schema input/output, manages its own authentication, handles API complexity internally, and exposes clean operations like <code>list_issues(repo, state, labels)</code></li>
+        </ul>
+
+        <div class="callout callout-insight">
+          <div class="callout-label">The Litmus Test for MCP</div>
+          <p>Ask yourself: <strong>does this require interacting with an external system's API?</strong> If yes, MCP. Rules can't make HTTP calls. Skills can guide the AI to use CLI tools, but that breaks when the CLI isn't installed, the auth token expires, or the API changes. An MCP server encapsulates all of that complexity behind a clean tool interface. The AI calls <code>github_list_issues</code> and gets back structured JSON — it never has to think about <code>curl -H "Authorization: Bearer $TOKEN"</code>.</p>
+        </div>
+
+        <h3>MCP vs. "Just Use the CLI"</h3>
+
+        <p>
+          A common objection: "Why build an MCP server when the AI can just run <code>gh issue list</code>?" It's a fair question. The answer is <strong>reliability and composability</strong>:
+        </p>
+
+        <ul>
+          <li><code>gh</code> CLI requires installation and authentication setup. MCP manages its own auth.</li>
+          <li>CLI output is unstructured text that the AI must parse. MCP returns typed JSON.</li>
+          <li>CLI commands compose poorly ("list issues, then for each issue, get comments" requires the AI to write a loop in Bash). MCP tools compose through the agentic loop naturally.</li>
+          <li>CLI errors are strings. MCP errors are structured with error codes, enabling programmatic retry.</li>
+          <li>The MCP server can implement caching, rate limiting, and pagination internally — invisible to the AI.</li>
+        </ul>
+
+        <p>
+          That said, for simple cases ("just run <code>gh pr list</code>"), the CLI via Bash is perfectly fine. MCP shines when the integration is complex, long-lived, or shared across teams.
+        </p>
+
+
+        <h2>6. Plugins: The Ecosystem Pattern</h2>
+
+        <div class="scenario-box">
+          <div class="scenario-label">Requirement #5: Auto-label PRs by file path</div>
+          <p>"When a PR touches files in src/auth/*, automatically add the 'security' label. When it touches src/payments/*, add the 'billing' label. This should work for any repo, not just mine."</p>
+        </div>
+
+        <p>
+          A <strong>Plugin</strong> is the broadest concept — a third-party package that extends the AI agent's capabilities through a marketplace or registry. Plugins combine multiple mechanisms (tools, rules, resources) into a distributable unit. The concept is most mature in the ChatGPT ecosystem:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Platform</th><th>Plugin Concept</th><th>Distribution</th></tr></thead>
+            <tbody>
+              <tr><td>ChatGPT</td><td>GPT Store (GPTs with Actions)</td><td>OpenAI marketplace</td></tr>
+              <tr><td>Claude Code</td><td>MCP servers (community registry)</td><td>npm, pip, or standalone binaries</td></tr>
+              <tr><td>GitHub Copilot</td><td>Copilot Extensions</td><td>GitHub Marketplace</td></tr>
+              <tr><td>Gemini</td><td>Extensions</td><td>Google-provided, limited third-party</td></tr>
+              <tr><td>VS Code (Copilot/Cursor)</td><td>VS Code Extensions</td><td>VS Code Marketplace</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Why This One Is Different</h3>
+
+        <p>
+          Auto-labeling PRs by file path requires combining <strong>multiple mechanisms</strong>: an MCP tool to read the PR's changed files and apply labels (API access), a configuration file that maps paths to labels (data), and potentially a hook to trigger labeling after every PR creation (automation). No single mechanism handles this alone.
+        </p>
+
+        <p>
+          This is exactly what a plugin is: <strong>a package that bundles multiple extension mechanisms into a single installable unit</strong>. A "GitHub PR Labeler" plugin would ship an MCP server (for API calls), a config schema (for path-to-label mappings), and installation instructions to wire it into your agent's hooks or skills.
+        </p>
+
+        <div class="callout callout-warning">
+          <div class="callout-label">The Plugin Concept Is Converging on MCP</div>
+          <p>In practice, the "plugin" concept across AI platforms is converging on MCP as the standard protocol. OpenAI adopted MCP in 2025. GitHub Copilot added MCP support in 2026. The days of each platform having a proprietary plugin format are numbered. An MCP server <em>is</em> a plugin — it's just distributed as a process rather than a marketplace listing. The key remaining difference is discoverability: ChatGPT's GPT Store and GitHub's Marketplace provide discovery; MCP servers are currently discovered through word-of-mouth and GitHub repos.</p>
+        </div>
+
+
+        <h2>7. The Unified Mental Model</h2>
+
+        <p>
+          Now that we've seen all five mechanisms through the lens of one integration, we can draw the map. These mechanisms differ along three axes:
+        </p>
+
+        <!-- SVG Diagram -->
+        <div class="diagram-section">
+          <div class="diagram-title">Extension Mechanism Taxonomy — Three Axes of Differentiation</div>
+          <div class="diagram-container">
+            <svg viewBox="0 0 880 420" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+              <defs><filter id="s" x="-4%" y="-4%" width="108%" height="108%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/></filter></defs>
+
+              <!-- Axis labels -->
+              <text x="440" y="25" text-anchor="middle" font-size="12" font-weight="700" fill="#0F1117">When does it run?</text>
+              <text x="130" y="48" font-size="10" fill="#4A5568" font-weight="600">Always Active</text>
+              <text x="680" y="48" font-size="10" fill="#4A5568" font-weight="600" text-anchor="end">On Demand</text>
+              <line x1="130" y1="55" x2="750" y2="55" stroke="#CBD5E1" stroke-width="2"/>
+              <circle cx="130" cy="55" r="4" fill="#CBD5E1"/>
+              <circle cx="750" cy="55" r="4" fill="#CBD5E1"/>
+
+              <!-- Rules card -->
+              <rect x="50" y="75" width="200" height="130" rx="10" fill="rgba(167,139,250,0.08)" stroke="#A78BFA" stroke-width="1.5" filter="url(#s)"/>
+              <text x="150" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#7C3AED">RULES</text>
+              <text x="150" y="115" text-anchor="middle" font-size="9" fill="#4A5568">Always loaded into context</text>
+              <line x1="65" y1="123" x2="235" y2="123" stroke="#DDD6FE" stroke-width="1"/>
+              <text x="65" y="140" font-size="9" fill="#4A5568">Execution: <tspan font-weight="600" fill="#7C3AED">AI-interpreted</tspan></text>
+              <text x="65" y="156" font-size="9" fill="#4A5568">Determinism: <tspan font-weight="600" fill="#7C3AED">Advisory</tspan></text>
+              <text x="65" y="172" font-size="9" fill="#4A5568">API access: <tspan font-weight="600" fill="#7C3AED">None</tspan></text>
+              <text x="65" y="195" font-size="8" fill="#6D28D9">CLAUDE.md · .cursorrules · Custom Instructions</text>
+
+              <!-- Hooks card -->
+              <rect x="270" y="75" width="200" height="130" rx="10" fill="rgba(248,113,113,0.08)" stroke="#F87171" stroke-width="1.5" filter="url(#s)"/>
+              <text x="370" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#DC2626">HOOKS</text>
+              <text x="370" y="115" text-anchor="middle" font-size="9" fill="#4A5568">Triggered by tool calls</text>
+              <line x1="285" y1="123" x2="455" y2="123" stroke="#FECACA" stroke-width="1"/>
+              <text x="285" y="140" font-size="9" fill="#4A5568">Execution: <tspan font-weight="600" fill="#DC2626">Deterministic code</tspan></text>
+              <text x="285" y="156" font-size="9" fill="#4A5568">Determinism: <tspan font-weight="600" fill="#DC2626">Absolute</tspan></text>
+              <text x="285" y="172" font-size="9" fill="#4A5568">API access: <tspan font-weight="600" fill="#DC2626">Shell scripts</tspan></text>
+              <text x="285" y="195" font-size="8" fill="#991B1B">preToolUse · postToolUse · Git hooks</text>
+
+              <!-- Skills card -->
+              <rect x="490" y="75" width="200" height="130" rx="10" fill="rgba(52,211,153,0.08)" stroke="#34D399" stroke-width="1.5" filter="url(#s)"/>
+              <text x="590" y="98" text-anchor="middle" font-size="11" font-weight="700" fill="#059669">SKILLS</text>
+              <text x="590" y="115" text-anchor="middle" font-size="9" fill="#4A5568">Invoked by user or model</text>
+              <line x1="505" y1="123" x2="675" y2="123" stroke="#A7F3D0" stroke-width="1"/>
+              <text x="505" y="140" font-size="9" fill="#4A5568">Execution: <tspan font-weight="600" fill="#059669">AI-guided workflow</tspan></text>
+              <text x="505" y="156" font-size="9" fill="#4A5568">Determinism: <tspan font-weight="600" fill="#059669">Adaptive</tspan></text>
+              <text x="505" y="172" font-size="9" fill="#4A5568">API access: <tspan font-weight="600" fill="#059669">Via existing tools</tspan></text>
+              <text x="505" y="195" font-size="8" fill="#065F46">/commit · /pr · GPTs · Copilot prompts</text>
+
+              <!-- MCP card -->
+              <rect x="50" y="230" width="310" height="130" rx="10" fill="rgba(96,165,250,0.08)" stroke="#60A5FA" stroke-width="1.5" filter="url(#s)"/>
+              <text x="205" y="253" text-anchor="middle" font-size="11" font-weight="700" fill="#2563EB">MCP SERVERS</text>
+              <text x="205" y="270" text-anchor="middle" font-size="9" fill="#4A5568">Always available, invoked by model</text>
+              <line x1="65" y1="278" x2="345" y2="278" stroke="#BFDBFE" stroke-width="1"/>
+              <text x="65" y="295" font-size="9" fill="#4A5568">Execution: <tspan font-weight="600" fill="#2563EB">Standalone process (JSON-RPC 2.0)</tspan></text>
+              <text x="65" y="311" font-size="9" fill="#4A5568">Determinism: <tspan font-weight="600" fill="#2563EB">Deterministic tools, AI-chosen invocation</tspan></text>
+              <text x="65" y="327" font-size="9" fill="#4A5568">API access: <tspan font-weight="600" fill="#2563EB">Full — typed, authenticated, structured</tspan></text>
+              <text x="65" y="350" font-size="8" fill="#1E40AF">GitHub MCP · Slack MCP · Jira MCP · ChatGPT Actions · Gemini Extensions</text>
+
+              <!-- Plugin card -->
+              <rect x="380" y="230" width="310" height="130" rx="10" fill="rgba(251,191,36,0.08)" stroke="#FBBF24" stroke-width="1.5" filter="url(#s)"/>
+              <text x="535" y="253" text-anchor="middle" font-size="11" font-weight="700" fill="#92400E">PLUGINS (COMPOSITE)</text>
+              <text x="535" y="270" text-anchor="middle" font-size="9" fill="#4A5568">Bundles multiple mechanisms into one package</text>
+              <line x1="395" y1="278" x2="675" y2="278" stroke="#FDE68A" stroke-width="1"/>
+              <text x="395" y="295" font-size="9" fill="#4A5568">Execution: <tspan font-weight="600" fill="#92400E">MCP + Rules + Config combined</tspan></text>
+              <text x="395" y="311" font-size="9" fill="#4A5568">Determinism: <tspan font-weight="600" fill="#92400E">Varies by component</tspan></text>
+              <text x="395" y="327" font-size="9" fill="#4A5568">API access: <tspan font-weight="600" fill="#92400E">Full (via embedded MCP)</tspan></text>
+              <text x="395" y="350" font-size="8" fill="#78350F">GPT Store · Copilot Extensions · VS Code Extensions · npm MCP packages</text>
+
+              <!-- Connection lines showing composition -->
+              <line x1="150" y1="205" x2="150" y2="230" stroke="#A78BFA" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="370" y1="205" x2="370" y2="230" stroke="#F87171" stroke-width="1" stroke-dasharray="4,3"/>
+              <line x1="205" y1="360" x2="380" y2="310" stroke="#FBBF24" stroke-width="1" stroke-dasharray="4,3"/>
+              <text x="295" y="340" font-size="7" fill="#92400E">combines</text>
+
+              <!-- Spectrum arrow at bottom -->
+              <text x="440" y="395" text-anchor="middle" font-size="10" font-weight="700" fill="#0F1117">Increasing External System Integration →</text>
+              <line x1="50" y1="405" x2="830" y2="405" stroke="#CBD5E1" stroke-width="2"/>
+              <text x="150" y="418" text-anchor="middle" font-size="8" fill="#7C3AED" font-weight="600">Rules</text>
+              <text x="370" y="418" text-anchor="middle" font-size="8" fill="#DC2626" font-weight="600">Hooks</text>
+              <text x="520" y="418" text-anchor="middle" font-size="8" fill="#059669" font-weight="600">Skills</text>
+              <text x="680" y="418" text-anchor="middle" font-size="8" fill="#2563EB" font-weight="600">MCPs</text>
+              <text x="800" y="418" text-anchor="middle" font-size="8" fill="#92400E" font-weight="600">Plugins</text>
+              <circle cx="150" cy="405" r="4" fill="#A78BFA"/>
+              <circle cx="370" cy="405" r="4" fill="#F87171"/>
+              <circle cx="520" cy="405" r="4" fill="#34D399"/>
+              <circle cx="680" cy="405" r="4" fill="#60A5FA"/>
+              <circle cx="800" cy="405" r="4" fill="#FBBF24"/>
+            </svg>
+          </div>
+          <div class="diagram-caption">Fig 1. Five extension mechanisms mapped along the spectrum from pure behavioral shaping (Rules) to full external system integration (Plugins). Each fills a distinct niche.</div>
+        </div>
+
+
+        <h2>8. The Decision Framework</h2>
+
+        <p>
+          When you're deciding how to extend your AI agent, ask these five questions in order:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Question</th><th>If Yes →</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td>Must this be enforced <strong>deterministically</strong>, even if the AI disagrees?</td><td><strong>Hook</strong></td><td>Only hooks provide code-level enforcement. Rules can be ignored; hooks cannot.</td></tr>
+              <tr><td>Does this require <strong>calling an external API</strong> with authentication?</td><td><strong>MCP Server</strong></td><td>MCPs manage auth, handle structured I/O, and encapsulate API complexity.</td></tr>
+              <tr><td>Is this a <strong>multi-step workflow</strong> invoked on demand?</td><td><strong>Skill</strong></td><td>Skills guide the AI through complex sequences without hard-coding the steps.</td></tr>
+              <tr><td>Should this apply to <strong>every conversation</strong> without being invoked?</td><td><strong>Rule</strong></td><td>Rules are background context — persistent, passive, pervasive.</td></tr>
+              <tr><td>Does this need to <strong>bundle multiple mechanisms</strong> for distribution?</td><td><strong>Plugin</strong></td><td>Plugins are composite — they combine MCP + rules + config into installable packages.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Notice the order matters. You check for hooks first because safety constraints are non-negotiable — if something <em>must</em> be enforced, no amount of clever prompting is a substitute for deterministic code. You check for MCP next because API access is a hard technical requirement that no other mechanism can fulfill. Skills and rules are the last resort, not because they're less important, but because they're the most flexible and should handle everything that doesn't require determinism or API access.
+        </p>
+
+
+        <h2>9. The Convergence: Why Everything Is Becoming MCP</h2>
+
+        <p>
+          The most important trend in AI tooling is the <strong>convergence on MCP as the universal extension protocol</strong>. OpenAI adopted MCP in 2025. GitHub Copilot added MCP support in 2026. Google's Gemini is exploring MCP compatibility. Even Microsoft's Copilot ecosystem is aligning.
+        </p>
+
+        <p>
+          This is significant because it means the "plugin" concept is standardizing. A GitHub MCP server built for Claude Code works with OpenAI Codex. A Slack MCP server built for Cursor works with Claude Code. The N x M integration problem (N AI platforms x M tools) collapses to N + M: each platform implements the MCP client once, each tool implements the MCP server once, and everything connects.
+        </p>
+
+        <div class="callout callout-data">
+          <div class="callout-label">What MCP Doesn't Replace</div>
+          <p>MCP replaces <strong>Plugins and Actions</strong> — it standardizes how AI agents connect to external systems. But MCP does <em>not</em> replace Rules, Skills, or Hooks. These operate at different layers: Rules shape behavior (prompt-level), Skills define workflows (instruction-level), Hooks enforce constraints (code-level), and MCPs provide capabilities (protocol-level). A mature agent needs all four. MCP is the biggest single piece, but it's not the whole picture.</p>
+        </div>
+
+
+        <h2>10. The Complete GitHub Integration</h2>
+
+        <p>
+          Coming full circle, here's how all five mechanisms work together for our GitHub integration:
+        </p>
+
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Requirement</th><th>Mechanism</th><th>Why This One</th></tr></thead>
+            <tbody>
+              <tr><td>Know our commit/branch/PR conventions</td><td><strong>Rule</strong> (CLAUDE.md)</td><td>Persistent context, advisory, applies to all interactions</td></tr>
+              <tr><td>Create PRs with our exact workflow</td><td><strong>Skill</strong> (/pr)</td><td>Multi-step on-demand workflow, guides AI through tools</td></tr>
+              <tr><td>Never force-push to main</td><td><strong>Hook</strong> (preToolUse)</td><td>Hard safety constraint, must be deterministic</td></tr>
+              <tr><td>Read issues, check CI, post comments</td><td><strong>MCP</strong> (GitHub server)</td><td>Requires authenticated API access with structured I/O</td></tr>
+              <tr><td>Auto-label PRs by file path</td><td><strong>Plugin</strong> (MCP + config)</td><td>Bundles API access + configuration into a distributable package</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Five requirements, five mechanisms, zero overlap. That's the point. These aren't competing solutions — they're <strong>complementary layers</strong> that handle different aspects of the same integration. The confusion arises because different platforms use different names for the same concepts, and because most tutorials show each mechanism in isolation rather than showing how they compose.
+        </p>
+
+        <div class="pull-quote">
+          <p>"Don't ask 'should I use a Rule or an MCP?' Ask 'which aspect of my integration requires behavioral shaping, which requires deterministic enforcement, and which requires external API access?' The mechanism follows from the answer."</p>
+        </div>
+
+        <p>
+          The broader lesson extends beyond GitHub integration to any AI agent extension. Every time you want your agent to do something new, decompose the requirement along the three axes: determinism level, API access needs, and invocation pattern. The mechanism reveals itself. And in 2026, there's a very good chance the API access part will be an MCP server — no matter which AI platform you're building for.
+        </p>
+
+      </div>
+
+      <footer class="article-footer">
+        <div class="author-bio-card">
+          <div class="bio-avatar">SJ</div>
+          <div><div class="bio-name">Sushant Joshi</div><div class="bio-desc">Principal Engineer building agentic AI systems. This is part of the <a href="../">Neural Blueprints</a> series — deeply researched system design essays on real-world Agentic AI.</div></div>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+  <script>document.addEventListener('DOMContentLoaded',()=>hljs.highlightAll());</script>
+  <script>
+    const hamburger=document.getElementById('hamburger'),sidebar=document.getElementById('sidebar'),overlay=document.getElementById('overlay');
+    function toggleSidebar(){sidebar.classList.toggle('open');overlay.classList.toggle('visible')}
+    hamburger.addEventListener('click',toggleSidebar);overlay.addEventListener('click',toggleSidebar);
+  </script>
+</body>
+</html>
